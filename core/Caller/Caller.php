@@ -1,23 +1,25 @@
 <?php
 namespace Caller;
-require_once('config/Message.php');
-require_once('error/Error.php');
+require_once('Message.php');
+require_once('core/Error/Error.php');
+
+use Error\Error;
+
 class Caller
 {	
 	public static function run($class = CLASS_DEFAULT, $method = METHOD_DEFAULT, $arguments = array())
 	{
 		$result = self::call($class, $method, $arguments); // Ejecuta la clase y el metodo enviados por parametro
 		
-		if(!$result !== true) // Si ocurrio un problema en el llamado
+		if(is_string($result)) // Si ocurrio un problema en el llamado
 		{
 			// Control para evitar un bucle infinito en caso no exista el controlador o el encargado de mostrar los errores
-			if(($class == ERROR_CONTROLLER && $method == ERROR_METHOD) || ($class == S404_CONTROLLER && $method == S404_METHOD)
-			)
+			if(($class == ERROR_CONTROLLER && $method == ERROR_METHOD) || ($class == S404_CONTROLLER && $method == S404_METHOD))
 			{
-				$message = IS_PRODUCTION ? $result : Message::s404();
+				$message = IS_PRODUCTION ? Message::s404() : $result;
 				die($message);
 			}
-			else { Error::show($result); }
+			else { Error::show404($result); }
 		}
 	}
 	

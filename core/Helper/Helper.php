@@ -1,5 +1,6 @@
 <?php
 namespace Helper;
+
 class Helper
 {
 	/*
@@ -16,10 +17,10 @@ class Helper
 		Example: http://localhost/my_project
 		Return: http://localhost/my_project/
 	*/
-	public static function getRoot()
+	public static function getURLBase()
 	{
+		//$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 		$protocol = 'http';
-		$server = $_SERVER['SERVER_NAME'];
-		return $protocol . '://' . $server . self::getFolder() . '/';
+		return $protocol . '://' . $_SERVER['SERVER_NAME'] . ':' . $_SERVER['SERVER_PORT'] . self::getFolder() . '/';
 	}
 }

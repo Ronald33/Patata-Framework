@@ -1,8 +1,10 @@
 <?php
 namespace DB;
-require_once('config/config.php');
-require_once('error/Error.php');
-require_once('message/Message.php');
+require_once(LIBRARIES . 'DB/config/config.php');
+require_once(LIBRARIES . 'DB/Message.php');
+require_once('core/Error/Error.php');
+use Error\Error;
+
 class DB
 {
 	private $db;
@@ -13,13 +15,17 @@ class DB
 	
 	public function __construct()
 	{
-		$dsn = 'mysql:dbname=' . DB_NAME . ';host=' . HOST;
-		$options = array
-		(
-			\PDO::ATTR_PERSISTENT => true, 
-			\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
-		);
-		$this->dbh = new \PDO($dsn, USER, PASSWORD, $options);
+		try
+		{
+			$dsn = 'mysql:dbname=' . DB_NAME . ';host=' . HOST;
+			$options = array
+			(
+				\PDO::ATTR_PERSISTENT => true, 
+				\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+			);
+			$this->dbh = new \PDO($dsn, USER, PASSWORD, $options);
+		}
+		catch(\Exception $e) { $this->showError($e); }
 	}
 	
 	private function setSQL($sql) { $this->sql = $sql; }
@@ -33,7 +39,7 @@ class DB
 			$this->bindValues($data);
 			return $this->stmt->execute();
 		}
-		catch(\Exception $e) { $this->showError($e); return false; }
+		catch(\Exception $e) { $this->showError($e); }
 	}
 	
 	public function insert($table, $data)
@@ -70,12 +76,16 @@ class DB
 	
 	public function update($table, $replacements, $where, $data = array())
 	{
-		$settes = array();
-		foreach($replacements as $key => $value) { array_push($setters, $key . ' = :' . $key); }
-		$_replacements = implode(', ', $settes);
-		
-		$sql = 'UPDATE ' . $table . ' SET ' . $_replacements . ' WHERE ' . $where;
-		return $this->query($sql, $data);
+		$keys = array();
+		$values = array();
+		foreach($replacements as $key => $value)
+		{
+			array_push($keys, $key . ' = :' . $key);
+			$values[$key] = $value;
+		}
+		$_keys = implode(', ', $keys);
+		$sql = 'UPDATE ' . $table . ' SET ' . $_keys . ' WHERE ' . $where;
+		return $this->query($sql, array_merge($data, $values));
 	}
 	
 	public function delete($table, $where, $data = array())
@@ -148,7 +158,6 @@ class DB
 	private function showError(\Exception $e)
 	{
 		if($this->isTransaction && AUTO_ROLLBACK) { $this->isTransaction = false; $this->rollback(); }
-		if(IS_PRODUCTION) { Error::show($e->getMessage()); die(); }
-		else { throw new \Exception(Message::error()); }
+		Error::showMessage($e->getMessage(), Message::$default, true);
 	}
 }

@@ -1,10 +1,12 @@
 <?php
 namespace Render;
-require_once('config/config.php');
-require_once('helper/Helper.php');
-require_once('message/Message.php');
-require_once('your_dictionary/Dictionary.php');
-require_once('error/Error.php');
+require_once(LIBRARIES . 'Render/config/config.php');
+require_once(LIBRARIES . 'Render/helper/Helper.php');
+require_once(LIBRARIES . 'Render/message/Message.php');
+require_once(LIBRARIES . 'Render/your_dictionary/Dictionary.php');
+require_once('core/Error/Error.php');
+use Error\Error;
+
 class Render
 {
     // Nombre del template
@@ -42,7 +44,7 @@ class Render
 	public function addTemplate($filename)
 	{
 		if(file_exists($filename)) { $this->template .= file_get_contents($filename); }
-		else { Error::show(Message::noFile($filename)); }
+		else { Error::showMessage(Message::noFile($filename), Message::default, true); }
 	}
 	public function addContent($content) { $this->template .= $content; }
 	public function setContent($content) { $this->template = $content; }

@@ -1,5 +1,5 @@
 <?php
-require_once(MODEL . 'PageModel.php');
+require_once(MODEL . 'Page.php');
 require_once(VIEW . 'PageView.php');
 
 class PageController
@@ -9,7 +9,7 @@ class PageController
 	
 	public function __construct()
 	{
-		$this->model = new PageModel();
+		$this->model = new Page();
 		$this->view = new PageView();
 	}
 	

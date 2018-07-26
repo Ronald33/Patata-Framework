@@ -1,8 +1,8 @@
 <?php
 namespace URIDecoder;
 
-require_once('config/config.php');
-require_once('config/Helper.php');
+require_once('core/URIDecoder/config/config.php');
+require_once('Helper.php');
 
 class URIDecoder
 {
@@ -21,7 +21,11 @@ class URIDecoder
 			if($this->arguments)
 			{
 				$this->class = array_shift($this->arguments);
-				if($this->arguments) { $this->method = array_shift($this->arguments); }
+				if(\ENABLE_REST && !in_array($this->class, \REST_CLASS_EXCEPTIONS))
+				{
+					$this->method = \REST_METHOD[$_SERVER['REQUEST_METHOD']];
+				}
+				else { if($this->arguments) { $this->method = array_shift($this->arguments); } }
 			}
 		}
 	}

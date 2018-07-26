@@ -1,0 +1,42 @@
+<h1>Render</h1>
+
+<h2>Etiquetas</h2>
+
+<div>
+  La libreria Render permite que no se mezcle PHP y HTML, haciendo uso de etiquetas, un ejemplo de esto es muestra a continuación: 
+  <br/>
+  <pre>La etiqueta: {{open_tags}}variable{{close_tags}}, se transforma en: {{variable}}</pre>
+</div>
+
+<h2>Limpieza de etiquetas</h2>
+
+Las etiquetas sin un valor asignado (como esta: <pre class="inline">{{no_asignado}}</pre>) son automáticamente borrados a menos que se indique lo contrario, mediante comando:
+<br/>
+<pre>$render->setClear(false);</pre>
+
+<h2>Bucles</h2>
+
+Para mostrar el contenido de un array, es necesario indicar el inicio y el cierre del bucle con la etiqueta:
+<pre>
+  &lt;!--{{#llave_asociada}}--&gt;
+</pre>
+Y todo lo que se encuentre dentro de esas etiquetas, será repetido, haciendo los respectivos reemplazos.
+<br/>
+En caso de que se este usando un array sin especificar sus claves (como por ejemplo: <pre class="inline">array('C1', 'C2', 'C3')</pre>), se podrá acceder a los elementos este, mediante el comodín <pre class="inline">{{open_tags}}variable{{number}}</pre>
+
+<div>
+  <!--{{#books}}-->
+  <div class="book">
+    El libro: {{name}} tiene {{pages}} páginas
+    <div class="chapters">Tiene los capítulos:
+      <ul>
+        <!--{{#chapters}}-->
+        <li>{{number}}</li>
+        <!--{{#chapters}}-->
+      </ul>
+    </div>
+  </div>
+  <!--{{#books}}-->
+</div>
+
+En el ejemplo anterior se observa que el segundo libro no tiene disponible sus capítulos, por lo que el apartado "Capítulos" esta en blanco. Render no permite realizar condiciones, ya que se considera que para solucionar este tipo de problemas, existen otras formas como el uso de javascript ;).

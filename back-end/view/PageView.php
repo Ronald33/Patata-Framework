@@ -4,11 +4,7 @@ use Render\Render;
 
 class PageView
 {
-    private $html;
-    private $css;
-    private $js;
-    
-	public function index($data = array())
+    public function index($data = array())
 	{
 		$render = new Render($data, true);
 		$render->addTemplate(HTML . 'page/index.html');
@@ -16,13 +12,11 @@ class PageView
 		$render->addScript(JS . 'page/scripts.js');
 		echo $render;
 	}
-    
-    public function showError($data = array())
+	
+	public function showMessage($message, $status)
 	{
-		$render = new Render($data, false);
-		$render->addTemplate(HTML . 'page/error.html');
-		$render->addStyle(CSS . 'page/error.css');
-		echo $render;
+		http_response_code($status);
+		echo $message;
 	}
     
     public function s404($data = array())

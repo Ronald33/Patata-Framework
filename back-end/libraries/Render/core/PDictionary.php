@@ -6,8 +6,8 @@ abstract class PDictionary
 	{
 		return array
 		(
-			'ROOT' => \ROOT, 
-			'FE' => \FE
+			'URL_BASE' => \URL_BASE, 
+			'FRONT_END' => \FRONT_END
 		);
 	}
 }
