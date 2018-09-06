@@ -1,8 +1,9 @@
 <?php
-require_once(MODEL . 'DB/EditorialDB.php');
-
-class Editorial extends EditorialDB
+class Editorial
 {
+    protected $_id;
+    protected $_nombre;
+
     public function __construct($id = null)
     {
         $this->_id = $id;

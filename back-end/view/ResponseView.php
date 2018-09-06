@@ -1,6 +1,4 @@
 <?php
-require_once(HELPER . 'Helper.php');
-
 class ResponseView
 {
 	// Ok
@@ -11,12 +9,12 @@ class ResponseView
 	public function s400($message = '') { Helper::respondWithJSON($message, 400); }
 	// No se tiene la autorizacion
 	public function s401($message = '') { Helper::respondWithJSON($message, 401); }
-	// Pago requerido
-	public function s402($message = '') { Helper::respondWithJSON($message, 402); }
 	// No se tiene los suficientes privilegios
 	public function s403($message = '') { Helper::respondWithJSON($message, 403); }
 	// Recurso no encontrado
 	public function s404($message = '') { Helper::respondWithJSON($message, 404); }
+	// Conflicto en la peticion
+	public function s409($message = '') { Helper::respondWithJSON($message, 409); }
 	// Error en el servidor
 	public function s500($message = '') { Helper::respondWithJSON($message, 500); }
 	// Metodo no implementado

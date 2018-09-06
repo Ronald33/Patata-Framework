@@ -17,13 +17,14 @@ class DB
 	{
 		try
 		{
-			$dsn = 'mysql:dbname=' . DB_NAME . ';host=' . HOST;
+			$conf = parse_ini_file(LIBRARIES . 'DB/config/config-' . (IS_PRODUCTION ? 'prod' : 'dev') . '.ini');
+			$dsn = 'mysql:dbname=' . $conf['DB_NAME'] . ';host=' . $conf['HOST'];
 			$options = array
 			(
 				\PDO::ATTR_PERSISTENT => true, 
 				\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
 			);
-			$this->dbh = new \PDO($dsn, USER, PASSWORD, $options);
+			$this->dbh = new \PDO($dsn, $conf['USER'], $conf['PASSWORD'], $options);
 		}
 		catch(\Exception $e) { $this->showError($e); }
 	}
@@ -95,11 +96,11 @@ class DB
 	}
 	
 	public function fetchArray() { return $this->fetch(\PDO::FETCH_ASSOC); }
-    public function fetchArrayAll() { return $this->fetch(\PDO::FETCH_ASSOC); }
+    public function fetchArrayAll() { return $this->fetchAll(\PDO::FETCH_ASSOC); }
     public function fetchObject() { return $this->fetch(\PDO::FETCH_OBJ); }
     public function fetchObjectAll() { return $this->fetchAll(\PDO::FETCH_OBJ); }
     public function rowCount() { return $this->stmt->rowCount(); }
-    public function lastInsertId(){ return $this->dbh->lastInsertId(); }
+    public function getLastInsertId(){ return $this->dbh->lastInsertId(); }
 	
 	/* Transacts */
 	public function beginTransaction()

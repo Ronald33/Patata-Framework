@@ -10,7 +10,9 @@ class Helper
 	public static function getFolder()
 	{
 		$self = $_SERVER['PHP_SELF'];
-		return dirname($self);
+		$folder = dirname($self);
+		if($folder == '/') { return ''; }
+		else { return $folder; }
 	}
 
 	/*

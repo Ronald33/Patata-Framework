@@ -33,6 +33,8 @@ abstract class Message
 		'isNames' 		=> 'Solo esta permitido letras y espacios', 
 		'existsMinimum'	=> 'Elementos insuficientes', 
 		'isLess' 		=> 'Excede la cantidad de caracteres permitidos', 
-		'isIn' 			=> 'No se encuentra en las opciones disponibles'
+		'isIn' 			=> 'No se encuentra en las opciones disponibles', 
+		'hasElements'	=> 'No se le asigno elementos', 
+		'hasUniqueValues'	=> 'Tiene valores duplicados'
 	);
 }

@@ -1,0 +1,51 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h4>
+            Libros
+            <a href="libros/nuevo" title="Crear nuevo genero" class="pull-right">
+                <span class="glyphicon glyphicon-plus"></span>
+            </a>
+        </h4>
+    </div>
+    <!-- /.panel-heading -->
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover my-table">
+                <thead>
+                    <tr>
+                        <th class="td-id">ID</th>
+                        <th>Titulo</th>
+                        <th>&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="libro in libros | orderBy:'-id'">
+                        <td class="td-id">{{libro.id}}</td>
+                        <td>{{libro.titulo}}</td>
+                        <td class="three-icons">
+                            <ul class="list-inline">
+                                <li>
+                                    <a href="libros/ver/{{libro.id}}" title="Ver {{libro.titulo}}">
+                                        <span class="glyphicon glyphicon-eye-open"></span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="libros/editar/{{libro.id}}" title="Editar {{libro.titulo}}">
+                                        <span class="glyphicon glyphicon-pencil"></span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" title="Eliminar {{libro.nombre}}" ng-click="eliminar(libro);">
+                                        <span class="glyphicon glyphicon-remove"></span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- /.panel-body -->
+</div>
+<!-- /.panel -->

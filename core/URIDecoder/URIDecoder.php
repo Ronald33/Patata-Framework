@@ -2,7 +2,7 @@
 namespace URIDecoder;
 
 require_once('core/URIDecoder/config/config.php');
-require_once('Helper.php');
+require_once('core/URIDecoder/Helper.php');
 
 class URIDecoder
 {

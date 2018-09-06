@@ -1,23 +1,11 @@
 <?php
 require_once(LIBRARIES . 'DB/DB.php');
+require_once(MODEL . 'business/Editorial.php');
 use DB\DB;
 
-class EditorialDB
+class EditorialModel extends Editorial
 {
     private static $table = 'editoriales';
-
-    protected $_id;
-    protected $_nombre;
-    
-    public function insert()
-    {
-        $db = new DB();
-        $data = array
-                (
-                    'edit_nombre' => $this->_nombre
-                );
-        $db->insert(self::$table, $data);
-    }
 
     public static function selectAll()
     {
@@ -35,13 +23,24 @@ class EditorialDB
         $db = new DB();
         $fields = array
         (
-            'edit_id' => 'id', 
             'edit_nombre' => 'nombre'
         );
         $where = 'edit_id = :id';
         $replacements = array('id' => $id);
         $result = $db->select(self::$table, $fields, $where, $replacements);
-        return $db->select(self::$table, $fields, $where, $replacements);
+        if(sizeof($result) == 1) { return $result[0]; }
+        else { return NULL; }
+    }
+
+    public function insert()
+    {
+        $db = new DB();
+        $data = array
+                (
+                    'edit_nombre' => $this->_nombre
+                );
+        $db->insert(self::$table, $data);
+        return $db->getLastInsertId();
     }
 
     public function update()
@@ -57,14 +56,11 @@ class EditorialDB
         return $db->rowCount();
     }
 
-    public static function delete($id)
+    public function delete()
     {
         $db = new DB();
         $where = 'edit_id = :id_to_delete';
-        $data = array
-        (
-            'id_to_delete' => $id
-        );
+        $data = array('id_to_delete' => $this->_id);
         $db->delete(self::$table, $where, $data);
         return $db->rowCount();
     }

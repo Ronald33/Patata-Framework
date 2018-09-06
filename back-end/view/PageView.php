@@ -12,12 +12,6 @@ class PageView
 		$render->addScript(JS . 'page/scripts.js');
 		echo $render;
 	}
-	
-	public function showMessage($message, $status)
-	{
-		http_response_code($status);
-		echo $message;
-	}
     
     public function s404($data = array())
 	{

@@ -20,12 +20,6 @@ class PageController
 		$this->view->index($data);
 	}
 	
-	public function showError($error)
-	{
-		$data = array('error' => $error);
-		$this->view->showError($data);
-	}
-	
 	public function s404()
 	{
 		$data = array();

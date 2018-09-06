@@ -23,7 +23,7 @@ abstract class Rule
         else { return false; }
     }
     public static function isUrl($value) { return filter_var($value, FILTER_VALIDATE_URL); }
-    public static function isDate($value, $format = 'd/m/y') { return \DateTime::createFromFormat($format, $value); }
+    public static function isDate($value, $format = 'd/m/Y') { return \DateTime::createFromFormat($format, $value); }
     public static function isFilled($value)
     {
         if(strlen(trim($value)) > 0) { return true; }
@@ -51,4 +51,25 @@ abstract class Rule
     }
     public static function isLess($value, $size) { return strlen($value) < $size; }
     public static function isIn($value, $array) { return in_array($value, $array); }
+    public static function hasElements($array = array())
+    {
+        if(!is_array($array)) { return false; }
+        if(sizeof($array) == 0) { return false; }
+        else { return true; }
+    }
+    public static function hasUniqueValues($array = array())
+    {
+        if(is_array($array))
+        {
+            $aux = array();
+            foreach ($array as $val)
+            {
+                $index = crc32(serialize($val));
+                if(isset($aux[$index])) { return false; }
+                else { $aux[$index] = 1; }
+            }
+            return true;
+        }
+        else { return true; }
+    }
 }

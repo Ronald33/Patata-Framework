@@ -1,17 +1,17 @@
 <?php
-require_once(MODEL . 'EditorialModel.php');
+require_once(MODEL . 'AutorModel.php');
 require_once(VIEW . 'ResponseView.php');
-require_once(VALIDATOR . 'EditorialValidator.php');
+require_once(VALIDATOR . 'AutorValidator.php');
 require_once(HELPER . 'Helper.php');
 
-class EditorialController
+class AutorController
 {
 	private $model;
 	private $view;
 	
 	public function __construct()
 	{
-		$this->model = new EditorialModel();
+		$this->model = new AutorModel();
 		$this->responseView = new ResponseView();
     }
     
@@ -33,11 +33,11 @@ class EditorialController
     public function post()
     {
         $obj = Helper::getInputs();
-        $response = EditorialValidator::tryValidate($obj);
+        $response = AutorValidator::tryValidate($obj);
 
         if($response === true)
         {
-            $this->model = Helper::cast('EditorialModel', $obj);
+            $this->model = Helper::cast('AutorModel', $obj);
             $this->responseView->s201(array('id' => $this->model->insert()));
         }
         else { $this->responseView->s400($response); }
@@ -49,11 +49,11 @@ class EditorialController
         else
         {
             $obj = Helper::getInputs();
-            $response = EditorialValidator::tryValidate($obj);
+            $response = AutorValidator::tryValidate($obj);
             
             if($response === true)
             {
-                $this->model = Helper::cast('EditorialModel', $obj);
+                $this->model = Helper::cast('AutorModel', $obj);
                 $this->responseView->s201($this->model->update());
             }
             else { $this->responseView->s400($response); }
@@ -62,6 +62,11 @@ class EditorialController
     public function delete($id = null)
     {
         if($id == null) { $this->responseView->s501(); }
-        else { $this->model->setId($id); $this->responseView->s200($this->model->delete()); }
+        else
+        {
+            $this->model->setId($id);
+            if($this->model->isUsedByLibrosAutores()) { $this->responseView->s409(); }
+            else { $this->responseView->s200($this->model->delete()); }
+        }
     }
 }
