@@ -41,7 +41,7 @@ class PatataException
         return $result;
     }
 
-    public static function print($e)
+    public static function jprint($e)
     {
         echo '<h2>Exception:</h2>';
         echo '<pre>' . self::jTraceEx($e) . '</pre>';
