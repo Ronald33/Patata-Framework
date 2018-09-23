@@ -1,8 +1,8 @@
 angular.module('app').service('config', function(){
 	this.api_url = function()
 	{
-		if(IS_PRODUCTION) { return 'http://rondarav.epizy.com/'; }
-		else { return 'http://localhost:88/patata2/'; }
+		if(IS_PRODUCTION) { return config.api_url.production; }
+		else { return config.api_url.development; }
 	};
 });
 

@@ -1,3 +1,9 @@
+<?php
+require_once('helper/Helper.php');
+use Helper\Helper;
+$base_url = Helper::getURLBase();
+//echo $base_url;
+?>
 <!doctype html>
 <html class="no-js" lang="">
 
@@ -7,12 +13,9 @@
     <title>App</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!--
-    <link rel="stylesheet" href="http://localhost:88/patata2/app/vendor/bootstrap-3.3.7-dist/css/bootstrap.css">
-    -->
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <link rel="stylesheet" href="http://localhost:88/patata2/app/css/main.css">
-    <base href="http://localhost:88/patata2/app/" />
+    <link rel="stylesheet" href="<?=$base_url?>/css/main.css">
+    <base href="<?=$base_url?>" />
 </head>
 
 <body ng-app="app">
@@ -40,19 +43,20 @@
     <script src="https://code.angularjs.org/1.6.9/angular-resource.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/2.5.0/ui-bootstrap-tpls.min.js"></script>
     
-    <script src="http://localhost:88/patata2/app/js/prototype.js"></script>
+    <script src="<?=$base_url?>js/prototype.js"></script>
     
-    <script src="http://localhost:88/patata2/app/js/app.js"></script>
-    <script src="http://localhost:88/patata2/app/js/pre-config.js"></script>
-    <script src="http://localhost:88/patata2/app/js/config.js"></script>
+    <script src="<?=$base_url?>js/api_config.js"></script>
+    <script src="<?=$base_url?>js/app.js"></script>
+    <script src="<?=$base_url?>js/pre-config.js"></script>
+    <script src="<?=$base_url?>js/config.js"></script>
     
-    <script src="http://localhost:88/patata2/app/js/resources.js"></script>
-    <script src="http://localhost:88/patata2/app/js/directivas.js"></script>
+    <script src="<?=$base_url?>js/resources.js"></script>
+    <script src="<?=$base_url?>js/directivas.js"></script>
     
-    <script src="http://localhost:88/patata2/app/js/controllers/navigationController.js"></script>
-    <script src="http://localhost:88/patata2/app/js/controllers/editorialController.js"></script>
-    <script src="http://localhost:88/patata2/app/js/controllers/autorController.js"></script>
-    <script src="http://localhost:88/patata2/app/js/controllers/libroController.js"></script>
+    <script src="<?=$base_url?>js/controllers/navigationController.js"></script>
+    <script src="<?=$base_url?>js/controllers/editorialController.js"></script>
+    <script src="<?=$base_url?>js/controllers/autorController.js"></script>
+    <script src="<?=$base_url?>js/controllers/libroController.js"></script>
 </body>
 
 </html>

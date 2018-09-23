@@ -1,2 +1,2 @@
 RewriteEngine On
-RewriteRule !(^css|fonts|html|img|js|vendor) index.html
+RewriteRule !(^css|fonts|html|img|js|vendor) index.php
