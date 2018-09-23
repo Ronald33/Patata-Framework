@@ -1,8 +1,13 @@
 angular.module('app').service('config', function(){
 	this.api_url = function()
 	{
+<<<<<<< HEAD
 		if(IS_PRODUCTION) { return config.api_url.production; }
 		else { return config.api_url.development; }
+=======
+		if(IS_PRODUCTION) { return 'http://rondarav.epizy.com/'; }
+		else { return 'http://localhost/patata/'; }
+>>>>>>> 8118fce5cbb67c226ec55b655d7e47089c6be69c
 	};
 });
 

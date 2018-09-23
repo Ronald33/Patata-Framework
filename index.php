@@ -21,4 +21,4 @@ try
     $arguments = $URIDecoder->getArguments();
     Caller::run($class, $method, $arguments);
 }
-catch(Exception $e) { PatataException::print($e); }
+catch(Exception $e) { PatataException::jprint($e); }
