@@ -1,6 +1,6 @@
 <?php
-require_once(MODEL . 'EditorialModel.php');
-require_once(MODEL . 'AutorModel.php');
+require_once(MODEL . 'Editorial.php');
+require_once(MODEL . 'Autor.php');
 
 class Libro
 {
@@ -32,16 +32,16 @@ class Libro
     public function getFechaIngreso(){ return $this->_fecha_ingreso; }
     public function setFechaIngreso($fecha_ingreso){ $this->_fecha_ingreso = $fecha_ingreso; }
     public function getEditorial(){ return $this->_editorial; }
-    public function setEditorial(EditorialModel $editorial){ $this->_editorial = $editorial; }
+    public function setEditorial(Editorial $editorial){ $this->_editorial = $editorial; }
     public function getAutores(){ return $this->_autores; }
-    public function addAutor(AutorModel $autor){ array_push($this->_autores, $autor); }
+    public function addAutor(Autor $autor){ array_push($this->_autores, $autor); }
     public function setAutores($autores)
     {
         $this->_autores = array();
         $autores_size = sizeof($autores);
         for ($i = 0; $i < $autores_size; $i++)
         {
-            array_push($this->_autores, new AutorModel($autores[$i]));
+            array_push($this->_autores, new Autor($autores[$i]));
         }
     }
 }

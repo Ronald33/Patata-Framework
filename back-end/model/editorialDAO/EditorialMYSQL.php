@@ -1,24 +1,23 @@
 <?php
+require_once(MODEL . 'editorialDAO/IEditorialDAO.php');
 require_once(LIBRARIES . 'DB/DB.php');
-require_once(MODEL . 'business/Editorial.php');
 use DB\DB;
 
-class EditorialModel extends Editorial
+class EditorialMYSQL implements IEditorialDAO
 {
     private static $table = 'editoriales';
 
-    public static function selectAll()
+    public function selectAll()
     {
         $db = new DB();
         $fields = array
         (
-            'edit_id' => 'id', 
+            'edit_id' => 'id',
             'edit_nombre' => 'nombre'
         );
         return $db->select(self::$table, $fields);
-    }
-
-    public static function selectById($id)
+  	}
+    public function selectById($id)
     {
         $db = new DB();
         $fields = array
@@ -32,35 +31,35 @@ class EditorialModel extends Editorial
         else { return NULL; }
     }
 
-    public function insert()
+    public function insert(Editorial $editorial)
     {
         $db = new DB();
         $data = array
                 (
-                    'edit_nombre' => $this->_nombre
+                    'edit_nombre' => $editorial->getNombre()
                 );
         $db->insert(self::$table, $data);
         return $db->getLastInsertId();
     }
 
-    public function update()
+    public function update(Editorial $editorial)
     {
         $db = new DB();
-        $replacements = array('edit_nombre' => $this->_nombre);
+        $replacements = array('edit_nombre' => $editorial->getNombre());
         $where = 'edit_id = :id_to_modify';
         $data = array
         (
-            'id_to_modify' => $this->_id
+            'id_to_modify' => $editorial->getId()
         );
         $db->update(self::$table, $replacements, $where, $data);
         return $db->rowCount();
     }
 
-    public function delete()
+    public function delete(Editorial $editorial)
     {
         $db = new DB();
         $where = 'edit_id = :id_to_delete';
-        $data = array('id_to_delete' => $this->_id);
+        $data = array('id_to_delete' => $editorial->getId());
         $db->delete(self::$table, $where, $data);
         return $db->rowCount();
     }

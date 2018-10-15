@@ -1,25 +1,25 @@
 <?php
+require_once(MODEL . 'autorDAO/IAutorDAO.php');
 require_once(LIBRARIES . 'DB/DB.php');
-require_once(MODEL . 'business/Autor.php');
 use DB\DB;
 
-class AutorModel extends Autor
+class AutorMYSQL implements IAutorDAO
 {
     private static $table = 'autores';
     private static $table_libros_autores = 'libros_autores';
 
-    public static function selectAll()
+    public function selectAll()
     {
         $db = new DB();
         $fields = array
         (
-            'auto_id' => 'id', 
+            'auto_id' => 'id',
             'auto_nombre' => 'nombre'
         );
         return $db->select(self::$table, $fields);
     }
 
-    public static function selectById($id)
+    public function selectById($id)
     {
         $db = new DB();
         $fields = array
@@ -33,78 +33,78 @@ class AutorModel extends Autor
         else { return NULL; }
     }
 
-    public function insert()
+    public function insert(Autor $autor)
     {
         $db = new DB();
         $data = array
                 (
-                    'auto_nombre' => $this->_nombre
+                    'auto_nombre' => $autor->getNombre()
                 );
         $db->insert(self::$table, $data);
         return $db->getLastInsertId();
     }
 
-    public function update()
+    public function update(Autor $autor)
     {
         $db = new DB();
-        $replacements = array('auto_nombre' => $this->_nombre);
+        $replacements = array('auto_nombre' => $autor->getNombre());
         $where = 'auto_id = :id_to_modify';
-        $data = array('id_to_modify' => $this->_id);
+        $data = array('id_to_modify' => $autor->getId());
         $db->update(self::$table, $replacements, $where, $data);
         return $db->rowCount();
     }
 
-    public function delete()
+    public function delete(Autor $autor)
     {
         $db = new DB();
         $where = 'auto_id = :id_to_delete';
-        $data = array('id_to_delete' => $this->_id);
+        $data = array('id_to_delete' => $autor->getId());
         $db->delete(self::$table, $where, $data);
         return $db->rowCount();
     }
 
-    public function isUsedByLibrosAutores()
+    public function isUsedByLibrosAutores(Autor $autor)
     {
         $db = new DB();
-        $sql = 'SELECT  COUNT(*) AS amount 
-                FROM    ' . self::$table_libros_autores . ' 
+        $sql = 'SELECT  COUNT(*) AS amount
+                FROM    ' . self::$table_libros_autores . '
                 WHERE   liau_auto_id = :id';
-        $data = array('id' => $this->_id);
+        $data = array('id' => $autor->getId());
         $db->query($sql, $data);
         $result = $db->fetchArray();
         if($result['amount'] == 0) { return false; }
         else { return true; }
     }
 
-    public static function getByLibroId($id)
+    public function getFromLibro(Libro $libro)
     {
         $db = new DB();
-        $sql = 'SELECT  auto_id AS id, 
-                        auto_nombre AS nombre 
-                FROM    libros_autores 
-                JOIN    autores 
-                ON      liau_auto_id = auto_id 
+        $sql = 'SELECT  auto_id AS id,
+                        auto_nombre AS nombre
+                FROM    libros_autores
+                JOIN    autores
+                ON      liau_auto_id = auto_id
                 WHERE   liau_libr_id = :libr_id';
 
-        $data = array('libr_id' => $id);
+        $data = array('libr_id' => $libro->getId());
         $db->query($sql, $data);
         return $db->fetchArrayAll();
     }
 
-    public function addToLibro($libro_id, $db)
+    public function addToLibro(Autor $autor, Libro $libro, $db)
     {
         $data = array
                 (
-                    'liau_libr_id' => $libro_id, 
-                    'liau_auto_id' => $this->_id
+                    'liau_libr_id' => $libro->getId(),
+                    'liau_auto_id' => $autor->getId()
                 );
         $db->insert(self::$table_libros_autores, $data);
     }
 
-    public static function deleteFromLibro($libro_id, $db)
+    public function deleteFromLibro(Libro $libro, $db)
     {
         $where = 'liau_libr_id = :id_to_delete';
-        $data = array('id_to_delete' => $libro_id);
+        $data = array('id_to_delete' => $libro->getId());
         $db->delete(self::$table_libros_autores, $where, $data);
     }
 }
