@@ -1,5 +1,4 @@
 <?php
-
 class Render
 {
     public static function getBooks()
