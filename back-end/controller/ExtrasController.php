@@ -1,5 +1,5 @@
 <?php
-require_once(MODEL . 'ExtrasModel.php');
+require_once(MODEL . 'Extras.php');
 require_once(VIEW . 'ResponseView.php');
 require_once(HELPER . 'Helper.php');
 
@@ -10,7 +10,7 @@ class ExtrasController
 	
 	public function __construct()
 	{
-		$this->model = new ExtrasModel();
+		$this->model = new Extras();
 		$this->responseView = new ResponseView();
     }
     
