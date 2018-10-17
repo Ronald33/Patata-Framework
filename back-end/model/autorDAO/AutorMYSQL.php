@@ -7,25 +7,33 @@ class AutorMYSQL implements IAutorDAO
 {
     private static $table = 'autores';
     private static $table_libros_autores = 'libros_autores';
+    
+    private static $selected_fields = array
+	(
+		'auto_nombre' => 'nombre'
+	);
+	
+	private static function getFieldsToInsert(Autor $autor)
+	{
+		$fields = array
+		(
+			'auto_nombre' => $autor->getNombre()
+		);
+		return $fields;
+	}
 
     public function selectAll()
     {
         $db = new DB();
-        $fields = array
-        (
-            'auto_id' => 'id',
-            'auto_nombre' => 'nombre'
-        );
+        $fields = self::$selected_fields;
+        $fields['auto_id'] = 'id';
         return $db->select(self::$table, $fields);
     }
 
     public function selectById($id)
     {
         $db = new DB();
-        $fields = array
-        (
-            'auto_nombre' => 'nombre'
-        );
+        $fields = self::$selected_fields;
         $where = 'auto_id = :id';
         $replacements = array('id' => $id);
         $result = $db->select(self::$table, $fields, $where, $replacements);
@@ -36,10 +44,7 @@ class AutorMYSQL implements IAutorDAO
     public function insert(Autor $autor)
     {
         $db = new DB();
-        $data = array
-                (
-                    'auto_nombre' => $autor->getNombre()
-                );
+        $data = self::getFieldsToInsert($autor);
         $db->insert(self::$table, $data);
         return $db->getLastInsertId();
     }
@@ -47,7 +52,7 @@ class AutorMYSQL implements IAutorDAO
     public function update(Autor $autor)
     {
         $db = new DB();
-        $replacements = array('auto_nombre' => $autor->getNombre());
+        $replacements = self::getFieldsToInsert($autor);
         $where = 'auto_id = :id_to_modify';
         $data = array('id_to_modify' => $autor->getId());
         $db->update(self::$table, $replacements, $where, $data);

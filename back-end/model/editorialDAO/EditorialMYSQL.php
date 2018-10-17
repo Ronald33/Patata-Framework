@@ -6,24 +6,32 @@ use DB\DB;
 class EditorialMYSQL implements IEditorialDAO
 {
     private static $table = 'editoriales';
+    
+    private static $selected_fields = array
+	(
+		'edit_nombre' => 'nombre'
+	);
+	
+	private static function getFieldsToInsert(Editorial $editorial)
+	{
+		$fields = array
+		(
+			'edit_nombre' => $editorial->getNombre()
+		);
+		return $fields;
+	}
 
     public function selectAll()
     {
         $db = new DB();
-        $fields = array
-        (
-            'edit_id' => 'id',
-            'edit_nombre' => 'nombre'
-        );
+        $fields = self::$selected_fields;
+        $fields['edit_id'] = 'id';
         return $db->select(self::$table, $fields);
   	}
     public function selectById($id)
     {
         $db = new DB();
-        $fields = array
-        (
-            'edit_nombre' => 'nombre'
-        );
+        $fields = self::$selected_fields;
         $where = 'edit_id = :id';
         $replacements = array('id' => $id);
         $result = $db->select(self::$table, $fields, $where, $replacements);
@@ -34,10 +42,7 @@ class EditorialMYSQL implements IEditorialDAO
     public function insert(Editorial $editorial)
     {
         $db = new DB();
-        $data = array
-                (
-                    'edit_nombre' => $editorial->getNombre()
-                );
+        $data = self::getFieldsToInsert($editorial);
         $db->insert(self::$table, $data);
         return $db->getLastInsertId();
     }
@@ -45,12 +50,9 @@ class EditorialMYSQL implements IEditorialDAO
     public function update(Editorial $editorial)
     {
         $db = new DB();
-        $replacements = array('edit_nombre' => $editorial->getNombre());
+        $replacements = self::getFieldsToInsert($editorial);
         $where = 'edit_id = :id_to_modify';
-        $data = array
-        (
-            'id_to_modify' => $editorial->getId()
-        );
+        $data = array('id_to_modify' => $editorial->getId());
         $db->update(self::$table, $replacements, $where, $data);
         return $db->rowCount();
     }

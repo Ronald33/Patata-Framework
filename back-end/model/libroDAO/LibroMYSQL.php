@@ -9,39 +9,48 @@ class LibroMYSQL implements ILibroDAO
     private static $table = 'libros';
     private static $autorDAO;
     
+    private static $selected_fields = array
+	(
+		'libr_id' => 'id',
+		'libr_titulo' => 'titulo',
+		'libr_descripcion' => 'descripcion',
+		'libr_paginas' => 'paginas',
+		'libr_estado' => 'estado',
+		'libr_fecha_ingreso' => 'fecha_ingreso',
+		'libr_edit_id' => 'editorial'
+	);
+    
     public function __construct()
     {
 		self::$autorDAO = new AutorMYSQL();
+	}
+	
+	private static function getFieldsToInsert(Libro $libro)
+	{
+		$fields = array
+		(
+			'libr_titulo' => $libro->getTitulo(),
+			'libr_descripcion' => $libro->getDescripcion(),
+			'libr_paginas' => $libro->getPaginas(),
+			'libr_fecha_ingreso' => $libro->getFechaIngreso(),
+			'libr_edit_id' => $libro->getEditorial() == NULL ? NULL : $libro->getEditorial()->getId()
+		);
+        if($libro->getEstado() != NULL) { $fields['libr_estado'] = $libro->getEstado(); }
+		return $fields;
 	}
 
     public function selectAll()
     {
         $db = new DB();
-        $fields = array
-        (
-            'libr_id' => 'id',
-            'libr_titulo' => 'titulo',
-            'libr_descripcion' => 'descripcion',
-            'libr_paginas' => 'paginas',
-            'libr_estado' => 'estado',
-            'libr_fecha_ingreso' => 'fecha_ingreso',
-            'libr_edit_id' => 'editorial'
-        );
+        $fields = self::$selected_fields;
+        $fields['libr_id'] = 'id';
         return $db->select(self::$table, $fields);
     }
 
     public function selectById($id)
     {
         $db = new DB();
-        $fields = array
-        (
-            'libr_titulo' => 'titulo',
-            'libr_descripcion' => 'descripcion',
-            'libr_paginas' => 'paginas',
-            'libr_estado' => 'estado',
-            'libr_fecha_ingreso' => 'fecha_ingreso',
-            'libr_edit_id' => 'editorial'
-        );
+        $fields = self::$selected_fields;
         $where = 'libr_id = :id';
         $replacements = array('id' => $id);
         $result = $db->select(self::$table, $fields, $where, $replacements);
@@ -57,15 +66,7 @@ class LibroMYSQL implements ILibroDAO
     {
         $db = new DB();
         $db->beginTransaction();
-        $data = array
-                (
-                    'libr_titulo' => $libro->getTitulo(),
-                    'libr_descripcion' => $libro->getDescripcion(),
-                    'libr_paginas' => $libro->getPaginas(),
-                    'libr_fecha_ingreso' => $libro->getFechaIngreso(),
-                    'libr_edit_id' => $libro->getEditorial() == NULL ? NULL : $libro->getEditorial()->getId()
-                );
-        if($libro->getEstado() != NULL) { $data['libr_estado'] = $libro->getEstado(); }
+        $data = self::getFieldsToInsert($libro);
         $db->insert(self::$table, $data);
         $libro->setId($db->getLastInsertId());
         $this->addAutores($libro, $db);
@@ -77,14 +78,7 @@ class LibroMYSQL implements ILibroDAO
     {
         $db = new DB();
         $db->beginTransaction();
-        $replacements = array
-        (
-            'libr_titulo' => $libro->getTitulo(),
-            'libr_descripcion' => $libro->getDescripcion(),
-            'libr_paginas' => $libro->getPaginas(),
-            'libr_fecha_ingreso' => $libro->getFechaIngreso(),
-			'libr_edit_id' => $libro->getEditorial() == NULL ? NULL : $libro->getEditorial()->getId()
-        );
+        $replacements = self::getFieldsToInsert($libro);
         if($libro->getEstado() != NULL) { $data['libr_estado'] = $libro->getEstado(); }
         $where = 'libr_id = :id_to_modify';
         $data = array('id_to_modify' => $libro->getId());
