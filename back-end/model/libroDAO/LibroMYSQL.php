@@ -41,7 +41,7 @@ class LibroMYSQL implements ILibroDAO
 
     public function selectAll()
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $fields = self::$selected_fields;
         $fields['libr_id'] = 'id';
         return $db->select(self::$table, $fields);
@@ -49,7 +49,7 @@ class LibroMYSQL implements ILibroDAO
 
     public function selectById($id)
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $fields = self::$selected_fields;
         $where = 'libr_id = :id';
         $replacements = array('id' => $id);
@@ -64,49 +64,49 @@ class LibroMYSQL implements ILibroDAO
 
     public function insert(Libro $libro)
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $db->beginTransaction();
         $data = self::getFieldsToInsert($libro);
         $db->insert(self::$table, $data);
         $libro->setId($db->getLastInsertId());
-        $this->addAutores($libro, $db);
+        $this->addAutores($libro);
         $db->commit();
         return $libro->getId();
     }
 
     public function update(Libro $libro)
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $db->beginTransaction();
         $replacements = self::getFieldsToInsert($libro);
         if($libro->getEstado() != NULL) { $data['libr_estado'] = $libro->getEstado(); }
         $where = 'libr_id = :id_to_modify';
         $data = array('id_to_modify' => $libro->getId());
         $db->update(self::$table, $replacements, $where, $data);
-        $this->deleteAutores($libro, $db);
-        $this->addAutores($libro, $db);
+        $this->deleteAutores($libro);
+        $this->addAutores($libro);
         $db->commit();
         return $db->rowCount();
     }
 
     public function delete(Libro $libro)
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $db->beginTransaction();
-        $this->deleteAutores($libro, $db);
-        $where = 'libr_id = :id_to_delete';
+        $this->deleteAutores($libro);
+        $where = 'libr_ids = :id_to_delete';
         $data = array('id_to_delete' => $libro->getId());
         $db->delete(self::$table, $where, $data);
         $db->commit();
         return $db->rowCount();
     }
 
-    public function addAutores(Libro $libro, $db)
+    public function addAutores(Libro $libro)
     {
         $autores = $libro->getAutores();
         $autor_size = sizeof($autores);
-        for($i=0; $i < $autor_size; $i++) { self::$autorDAO->addToLibro($autores[$i], $libro, $db); }
+        for($i=0; $i < $autor_size; $i++) { self::$autorDAO->addToLibro($autores[$i], $libro); }
     }
 
-    public function deleteAutores(Libro $libro, $db) { self::$autorDAO->deleteFromLibro($libro, $db); }
+    public function deleteAutores(Libro $libro) { self::$autorDAO->deleteFromLibro($libro); }
 }

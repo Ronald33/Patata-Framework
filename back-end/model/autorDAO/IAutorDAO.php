@@ -10,6 +10,6 @@ interface IAutorDAO
   	public function delete(Autor $autor);
     public function isUsedByLibrosAutores(Autor $autor);
     public function getFromLibro(Libro $libro);
-    public function addToLibro(Autor $autor, Libro $libro, $db);
-    public function deleteFromLibro(Libro $libro, $db);
+    public function addToLibro(Autor $autor, Libro $libro);
+    public function deleteFromLibro(Libro $libro);
 }

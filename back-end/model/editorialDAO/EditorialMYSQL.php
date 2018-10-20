@@ -23,14 +23,14 @@ class EditorialMYSQL implements IEditorialDAO
 
     public function selectAll()
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $fields = self::$selected_fields;
         $fields['edit_id'] = 'id';
         return $db->select(self::$table, $fields);
   	}
     public function selectById($id)
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $fields = self::$selected_fields;
         $where = 'edit_id = :id';
         $replacements = array('id' => $id);
@@ -41,7 +41,7 @@ class EditorialMYSQL implements IEditorialDAO
 
     public function insert(Editorial $editorial)
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $data = self::getFieldsToInsert($editorial);
         $db->insert(self::$table, $data);
         return $db->getLastInsertId();
@@ -49,7 +49,7 @@ class EditorialMYSQL implements IEditorialDAO
 
     public function update(Editorial $editorial)
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $replacements = self::getFieldsToInsert($editorial);
         $where = 'edit_id = :id_to_modify';
         $data = array('id_to_modify' => $editorial->getId());
@@ -59,7 +59,7 @@ class EditorialMYSQL implements IEditorialDAO
 
     public function delete(Editorial $editorial)
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $where = 'edit_id = :id_to_delete';
         $data = array('id_to_delete' => $editorial->getId());
         $db->delete(self::$table, $where, $data);

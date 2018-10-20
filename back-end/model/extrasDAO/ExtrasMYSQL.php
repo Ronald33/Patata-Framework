@@ -6,7 +6,7 @@ class ExtrasMYSQL
 {
     public function getField($table, $field)
 	{
-        $db = new DB();
+        $db = DB::getInstance();
         $sql = 'SHOW    COLUMNS 
                 FROM    ' . $table . ' 
                 WHERE   Field = :field';

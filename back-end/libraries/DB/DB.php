@@ -13,7 +13,9 @@ class DB
 	private $stmt;
 	private $isTransaction;
 	
-	public function __construct()
+	private static $instance;
+	
+	private function __construct()
 	{
 		try
 		{
@@ -27,6 +29,12 @@ class DB
 			$this->dbh = new \PDO($dsn, $conf['USER'], $conf['PASSWORD'], $options);
 		}
 		catch(\Exception $e) { $this->showError($e); }
+	}
+	
+	public static function getInstance()
+	{
+		if(self::$instance == NULL) { self::$instance = new DB(); }
+		return self::$instance;
 	}
 	
 	private function setSQL($sql) { $this->sql = $sql; }
@@ -161,4 +169,6 @@ class DB
 		if($this->isTransaction && AUTO_ROLLBACK) { $this->isTransaction = false; $this->rollback(); }
 		Error::showMessage($e->getMessage(), Message::$default, true);
 	}
+	
+	public function __clone() { throw new Exception('No se puede clonar la clase DB'); }
 }

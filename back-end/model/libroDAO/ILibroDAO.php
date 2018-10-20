@@ -8,6 +8,6 @@ interface ILibroDAO
   	public function insert(Libro $libro);
   	public function update(Libro $libro);
   	public function delete(Libro $libro);
-  	public function addAutores(Libro $libro, $db);
-  	public function deleteAutores(Libro $libro, $db);
+  	public function addAutores(Libro $libro);
+  	public function deleteAutores(Libro $libro);
 }

@@ -24,7 +24,7 @@ class AutorMYSQL implements IAutorDAO
 
     public function selectAll()
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $fields = self::$selected_fields;
         $fields['auto_id'] = 'id';
         return $db->select(self::$table, $fields);
@@ -32,7 +32,7 @@ class AutorMYSQL implements IAutorDAO
 
     public function selectById($id)
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $fields = self::$selected_fields;
         $where = 'auto_id = :id';
         $replacements = array('id' => $id);
@@ -43,7 +43,7 @@ class AutorMYSQL implements IAutorDAO
 
     public function insert(Autor $autor)
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $data = self::getFieldsToInsert($autor);
         $db->insert(self::$table, $data);
         return $db->getLastInsertId();
@@ -51,7 +51,7 @@ class AutorMYSQL implements IAutorDAO
 
     public function update(Autor $autor)
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $replacements = self::getFieldsToInsert($autor);
         $where = 'auto_id = :id_to_modify';
         $data = array('id_to_modify' => $autor->getId());
@@ -61,7 +61,7 @@ class AutorMYSQL implements IAutorDAO
 
     public function delete(Autor $autor)
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $where = 'auto_id = :id_to_delete';
         $data = array('id_to_delete' => $autor->getId());
         $db->delete(self::$table, $where, $data);
@@ -70,7 +70,7 @@ class AutorMYSQL implements IAutorDAO
 
     public function isUsedByLibrosAutores(Autor $autor)
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $sql = 'SELECT  COUNT(*) AS amount
                 FROM    ' . self::$table_libros_autores . '
                 WHERE   liau_auto_id = :id';
@@ -83,7 +83,7 @@ class AutorMYSQL implements IAutorDAO
 
     public function getFromLibro(Libro $libro)
     {
-        $db = new DB();
+        $db = DB::getInstance();
         $sql = 'SELECT  auto_id AS id,
                         auto_nombre AS nombre
                 FROM    libros_autores
@@ -96,8 +96,9 @@ class AutorMYSQL implements IAutorDAO
         return $db->fetchArrayAll();
     }
 
-    public function addToLibro(Autor $autor, Libro $libro, $db)
+    public function addToLibro(Autor $autor, Libro $libro)
     {
+		$db = DB::getInstance();
         $data = array
                 (
                     'liau_libr_id' => $libro->getId(),
@@ -106,8 +107,9 @@ class AutorMYSQL implements IAutorDAO
         $db->insert(self::$table_libros_autores, $data);
     }
 
-    public function deleteFromLibro(Libro $libro, $db)
+    public function deleteFromLibro(Libro $libro)
     {
+		$db = DB::getInstance();
         $where = 'liau_libr_id = :id_to_delete';
         $data = array('id_to_delete' => $libro->getId());
         $db->delete(self::$table_libros_autores, $where, $data);
