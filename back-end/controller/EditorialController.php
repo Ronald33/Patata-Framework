@@ -62,7 +62,12 @@ class EditorialController
     }
     public function delete($id = null)
     {
-        if($id == null) { $this->responseView->s501(); }
-        else { $editorial = new Editorial($id); $this->responseView->s200($this->dao->delete($editorial)); }
+		if($id == null) { $this->responseView->s501(); }
+        else
+        {
+			$editorial = new Editorial($id);
+            if($this->dao->isUsedByLibros($editorial)) { $this->responseView->s409(); }
+            else { $this->responseView->s200($this->dao->delete($editorial)); }
+		}
     }
 }

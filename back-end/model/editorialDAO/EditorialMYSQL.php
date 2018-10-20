@@ -6,6 +6,7 @@ use DB\DB;
 class EditorialMYSQL implements IEditorialDAO
 {
     private static $table = 'editoriales';
+    private static $table_libros = 'libros';
     
     private static $selected_fields = array
 	(
@@ -64,5 +65,18 @@ class EditorialMYSQL implements IEditorialDAO
         $data = array('id_to_delete' => $editorial->getId());
         $db->delete(self::$table, $where, $data);
         return $db->rowCount();
+    }
+    
+    public function isUsedByLibros(Editorial $editorial)
+    {
+        $db = DB::getInstance();
+        $sql = 'SELECT  COUNT(*) AS amount
+                FROM    ' . self::$table_libros . '
+                WHERE   libr_edit_id = :id';
+        $data = array('id' => $editorial->getId());
+        $db->query($sql, $data);
+        $result = $db->fetchArray();
+        if($result['amount'] == 0) { return false; }
+        else { return true; }
     }
 }
