@@ -2,7 +2,6 @@
 require_once('helper/Helper.php');
 use Helper\Helper;
 $base_url = Helper::getURLBase();
-//echo $base_url;
 ?>
 <!doctype html>
 <html class="no-js" lang="">

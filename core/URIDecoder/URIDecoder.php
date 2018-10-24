@@ -12,8 +12,12 @@ class URIDecoder
 		$this->method = \METHOD_DEFAULT;
 		$this->arguments = array();
 		
+		// Limpiamos los parametros enviados via GET
+		$pos_qm = strpos($_SERVER['REQUEST_URI'], '?');
+		$request_uri = $pos_qm ? substr($_SERVER['REQUEST_URI'], 0, $pos_qm) : $_SERVER['REQUEST_URI'];
+
 		// Obtenemos la URI limpiando los URI_SEPARATOR y removiendo el directorio contenedor
-		$this->uri = trim(substr($_SERVER['REQUEST_URI'], Helper::getFolderLength()), URI_SEPARATOR);
+		$this->uri = trim(substr($request_uri, Helper::getFolderLength()), URI_SEPARATOR);
 
 		if($this->uri) // Si existe una URI
 		{
