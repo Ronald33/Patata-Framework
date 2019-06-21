@@ -7,8 +7,11 @@ require_once('core/Middleware/Middleware.php');
 require_once('core/URIDecoder/URIDecoder.php');
 require_once('core/Caller/Caller.php');
 require_once('core/PatataException/PatataException.php');
-if(ENABLE_REST) { require_once('core/REST/REST.php'); }
-if(ENABLE_REST) { require_once('core/REST/Response/Response.php'); }
+if(ENABLE_REST)
+{
+	require_once('core/REST/REST.php');
+	require_once('core/REST/Response/Response.php');
+}
 use UriDecoder\URIDecoder;
 use Caller\Caller;
 use PatataException\PatataException;
