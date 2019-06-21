@@ -24,7 +24,7 @@ class Caller
 	}
 	
     // Funcion encargada de verificar que el controlador pueda ser instanciado, en caso de exito retorna TRUE
-    /// Caso contrario retorna un string, el cual indica el error a solucionar
+    // Caso contrario retorna un string, el cual indica el error a solucionar
 	private static function call($class, $method, $arguments)
 	{
 		$controller = $class . CONTROLLER_SUFFIX;

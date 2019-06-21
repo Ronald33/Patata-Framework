@@ -24,7 +24,9 @@ define('VIEW', BACK_END . 'view/');
 define('CONTROLLER', BACK_END . 'controller/');
 define('HELPER', BACK_END . 'helper/');
 define('LIBRARIES', BACK_END . 'libraries/');
+define('MODULES', BACK_END . 'modules/');
 define('HTML', 'front-end/html/'); // Access to html files
+
 
 define('URL_BASE', Helper::getURLBase());
 define('FRONT_END', URL_BASE . 'front-end/');
