@@ -1,0 +1,88 @@
+<div class="form-group has-feedback" ng-class="{'has-error': form.titulo.$invalid && form.titulo.$dirty, 'has-success': form.titulo.$valid && form.titulo.$dirty}">
+    <label for="titulo" class="control-label">Titulo</label>
+    <input type="text" name="titulo" id="titulo" class="form-control" ng-model="item.titulo" required autofocus />
+    <span class="glyphicon glyphicon-ok form-control-feedback" ng-show="form.titulo.$valid && form.titulo.$dirty"></span>
+    <span class="glyphicon glyphicon-remove form-control-feedback" ng-show="form.titulo.$invalid && form.titulo.$dirty"></span>
+</div>
+<div ng-messages="form.titulo.$error" ng-show="form.titulo.$dirty" ng-include="'html/messages.html'">
+</div>
+
+<div class="form-group" ng-class="{'has-error': form.descripcion.$invalid && form.descripcion.$dirty, 'has-success': form.descripcion.$valid && form.descripcion.$dirty}">
+    <label for="descripcion" class="control-label">Descripcion</label>
+    <textarea class="form-control" rows="3" name="descripcion" id="descripcion" ng-model="item.descripcion" required></textarea>
+</div>
+<div ng-messages="form.descripcion.$error" ng-show="form.descripcion.$dirty" ng-include="'html/messages.html'">
+</div>
+
+<div class="form-group has-feedback" ng-class="{'has-error': form.paginas.$invalid && form.paginas.$dirty, 'has-success': form.paginas.$valid && form.paginas.$dirty}">
+    <label for="paginas" class="control-label">Páginas</label>
+    <input type="number" name="paginas" id="paginas" class="form-control" ng-model="item.paginas" />
+    <span class="glyphicon glyphicon-ok form-control-feedback" ng-show="form.paginas.$valid && form.paginas.$dirty"></span>
+    <span class="glyphicon glyphicon-remove form-control-feedback" ng-show="form.paginas.$invalid && form.paginas.$dirty"></span>
+</div>
+<div ng-messages="form.paginas.$error" ng-show="form.paginas.$dirty" ng-include="'html/messages.html'">
+</div>
+
+<div class="form-group" ng-class="{'has-success': form.estado.$valid && form.estado.$dirty}">
+    <label for="estado" class="control-label">Estado</label>
+    <select class="form-control" name="estado" id="estado" ng-model="item.estado" ng-options="estado for estado in estados">
+        <option value="">Seleccionar</option>
+    </select>
+</div>
+<div ng-messages="form.estado.$error" ng-show="form.estado.$dirty" ng-include="'html/messages.html'">
+</div>
+
+<div class="form-group" ng-class="{'has-error': form.editorial.$invalid && form.editorial.$dirty, 'has-success': form.editorial.$valid && form.editorial.$dirty}">
+    <label for="editorial" class="control-label">Editorial</label>
+    <select class="form-control" name="editorial" id="editorial" ng-model="item.editorial" ng-options="editorial.id as editorial.nombre for editorial in editoriales"
+        required>
+        <option value="">Seleccionar</option>
+    </select>
+</div>
+<div ng-messages="form.editorial.$error" ng-show="form.editorial.$dirty" ng-include="'html/messages.html'">
+</div>
+
+<div class="form-group has-feedback" ng-class="{'has-error': form.fecha_ingreso.$invalid && form.fecha_ingreso.$dirty, 'has-success': form.fecha_ingreso.$valid && form.fecha_ingreso.$dirty}">
+    <label for="fecha_ingreso" class="control-label">Fecha de ingreso</label>
+    <input type="date" name="fecha_ingreso" id="fecha_ingreso" class="form-control" ng-model="fecha_ingreso" ng-change="changeFechaIngreso()"/>
+    <span class="glyphicon glyphicon-ok form-control-feedback" ng-show="form.fecha_ingreso.$valid && form.fecha_ingreso.$dirty"></span>
+    <span class="glyphicon glyphicon-remove form-control-feedback" ng-show="form.fecha_ingreso.$invalid && form.fecha_ingreso.$dirty"></span>
+</div>
+<div ng-messages="form.fecha_ingreso.$error" ng-show="form.fecha_ingreso.$dirty" ng-include="'html/messages.html'">
+</div>
+
+<div class="form-group" ng-class="{'has-success': item.autores.length > 0}">
+    <label for="editorial" class="control-label">Autores</label>
+    <div>
+        <table class="table table-bordered table-condensed table-hover table-responsive table-striped">
+            <thead>
+                <tr>
+                    <th>Autor</th>
+                    <th class="one-icon-text">Opciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="autor in autores_selecteds">
+                    <td>{{autor.nombre}}</td>
+                    <td class="one-icon-text">
+                        <button type="button" class="btn btn-xs btn-danger" ng-click="eliminarAutor(autor)">
+                            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Eliminar
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div>
+    <div class="row">
+        <div class="col-lg-10">
+            <select class="form-control" id="autor" ng-model="autor" ng-options="autor as autor.nombre for autor in autores | orderBy: 'id'">
+                <option value="">Seleccione</option>
+            </select>
+        </div>
+        <div class="col-lg-2">
+            <button type="button" class="btn btn-info btn-block" ng-click="agregarAutor()" ng-disabled="!autor">Agregar Autor</button>
+        </div>
+    </div>
+</div>

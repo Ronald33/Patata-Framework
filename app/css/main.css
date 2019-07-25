@@ -1,0 +1,47 @@
+.ng-cloak
+{
+    display: none !important;
+}
+
+tr td ul.list-inline
+{
+    margin-bottom: 0;
+}
+
+td.two-icons
+{
+    width: 68px;
+}
+
+.inputs-with-errors
+{
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.three-icons
+{
+    width: 92px;
+}
+
+.one-icon-text
+{
+    width: 40px;
+}
+
+.td-id
+{
+    text-align: center;
+    width: 60px;
+}
+
+#loader
+{
+	border: 2px solid blue;
+	padding: 2px 4px;
+	background-color: #339;
+	color: white;
+	position: absolute;
+	right: 10px;
+	bottom: 10px;
+}
