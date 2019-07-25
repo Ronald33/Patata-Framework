@@ -20,7 +20,7 @@ class DB
 		try
 		{
 			$conf = parse_ini_file(LIBRARIES . 'DB/config/config-' . (IS_PRODUCTION ? 'prod' : 'dev') . '.ini');
-			$dsn = 'mysql:dbname=' . $conf['DB_NAME'] . ';host=' . $conf['HOST'];
+			$dsn = 'mysql:dbname=' . $conf['DB_NAME'] . ';host=' . $conf['HOST'] . ';charset=utf8';
 			$options = array
 			(
 				\PDO::ATTR_PERSISTENT => true, 

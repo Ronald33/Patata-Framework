@@ -18,7 +18,7 @@ spl_autoload_register(function($class_name){
 spl_autoload_register(function($interface_name){
     if(substr($interface_name, -3) == 'DAO')
     {
-        $fullpath = MODEL . strtolower(substr($interface_name, 1, -3)) . 'DAO' . DIRECTORY_SEPARATOR . $interface_name . '.php';
+        $fullpath = MODEL . lcfirst(substr($interface_name, 1, -3)) . 'DAO' . DIRECTORY_SEPARATOR . $interface_name . '.php';
         if(file_exists($fullpath)) { require_once($fullpath); }
     }
 });
@@ -27,7 +27,7 @@ spl_autoload_register(function($interface_name){
 spl_autoload_register(function($class_name){
     if(substr($class_name, -5) == 'MYSQL')
     {
-        $fullpath = MODEL . strtolower(substr($class_name, 0, -5)) . 'DAO' . DIRECTORY_SEPARATOR . $class_name . '.php';
+        $fullpath = MODEL . lcfirst(substr($class_name, 0, -5)) . 'DAO' . DIRECTORY_SEPARATOR . $class_name . '.php';
         if(file_exists($fullpath)) { require_once($fullpath); }
     }
 });
