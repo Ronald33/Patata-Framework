@@ -1,8 +1,0 @@
-<div class="form-group has-feedback" ng-class="{'has-error': form.nombre.$invalid && form.nombre.$dirty, 'has-success': form.nombre.$valid && form.nombre.$dirty}">
-    <label for="nombre" class="control-label">Nombre</label>
-    <input type="text" name="nombre" id="nombre" class="form-control" ng-model="item.nombre" required autofocus />
-    <span class="glyphicon glyphicon-ok form-control-feedback" ng-show="form.nombre.$valid && form.nombre.$dirty"></span>
-    <span class="glyphicon glyphicon-remove form-control-feedback" ng-show="form.nombre.$invalid && form.nombre.$dirty"></span>
-</div>
-<div ng-messages="form.nombre.$error" ng-show="form.nombre.$dirty" ng-include="'html/messages.html'">
-</div>
