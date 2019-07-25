@@ -1,0 +1,15 @@
+div
+{
+	margin: 3px;
+	padding: 6px;
+}
+
+div.book
+{
+	border: 1px solid #999;
+}
+
+pre.inline
+{
+	display: inline;
+}
