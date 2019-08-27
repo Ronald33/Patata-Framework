@@ -27,7 +27,7 @@ abstract class REST
 				if(isset($skip_auth['webs']))
 				{
 					$ips = array_map('gethostbyname', $skip_auth['webs']);
-					if(in_array($_SERVER['SERVER_ADDR'], $ips)) { REST::setData('WEB-ALLOWED'); }
+					if(in_array($_SERVER['REMOTE_ADDR'], $ips)) { REST::setData('WEB-ALLOWED'); }
 				}
 				else { \Error\Error::showMessage('Usuario no autorizado', '', 401); die(); }
 			}
@@ -55,7 +55,7 @@ abstract class REST
 		if(isset($config['token_by_ip']) && isset($config['token_by_ip'][$token]))
 		{
 			$ips = array_map('gethostbyname', $config['token_by_ip'][$token]);
-			if(in_array($_SERVER['SERVER_ADDR'], $ips)) { return true; }
+			if(in_array($_SERVER['REMOTE_ADDR'], $ips)) { return true; }
 		}
 		else { return false; }
 	}
