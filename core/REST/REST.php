@@ -10,9 +10,9 @@ abstract class REST
 	{
 		if($_SERVER['REQUEST_METHOD'] != 'OPTIONS')
 		{
-			if(isset(apache_request_headers()['Authorization']))
+			if(isset(apache_request_headers()['authorization']))
 			{
-				$token = apache_request_headers()['Authorization'];
+				$token = apache_request_headers()['authorization'];
 				if(self::validateTokenFromConfig($token)) { self::setData($token); }
 				else
 				{
@@ -23,11 +23,12 @@ abstract class REST
 			}
 			else
 			{
-				$skip_auth = parse_ini_file('core/REST/config/config.ini', true)['skip_auth'];
-				if(isset($skip_auth['webs']))
+				$config = parse_ini_file('core/REST/config/config.ini', true);
+				if(isset($config['skip_auth']))
 				{
-					$ips = array_map('gethostbyname', $skip_auth['webs']);
-					if(in_array($_SERVER['REMOTE_ADDR'], $ips)) { REST::setData('WEB-ALLOWED'); }
+					$skip_auth = preg_split('/,/', $config['skip_auth'], NULL, PREG_SPLIT_NO_EMPTY);
+					$ips = array_map('gethostbyname', $skip_auth);
+					if(in_array($_SERVER['REMOTE_ADDR'], $ips)) { REST::setData('SKIP-AUTH'); }
 				}
 				else { \Error\Error::showMessage('Usuario no autorizado', '', 401); die(); }
 			}
@@ -44,18 +45,27 @@ abstract class REST
 	}
 
 	public static function getMethods() { return parse_ini_file('core/REST/config/config.ini', true)['methods']; }
-	public static function getClassExceptions() { return parse_ini_file('core/REST/config/config.ini', true)['class_exceptions']; }
+	public static function getClassExceptions()
+	{
+		$config = parse_ini_file('core/REST/config/config.ini', true);
+		if(isset($config['class_exceptions'])) { return preg_split('/,/', $config['class_exceptions'], NULL, PREG_SPLIT_NO_EMPTY); }
+		else { return []; }
+	}
 	public static function getToken($data) { return Token::getToken($data); }
 	public static function getDataFromToken($token) { return Token::getDataFromToken($token); }
 	public static function getData() { return self::$data; }
 	public static function validateTokenFromConfig($token)
 	{
 		$config = parse_ini_file('core/REST/config/config.ini', true);
-
-		if(isset($config['token_by_ip']) && isset($config['token_by_ip'][$token]))
+		if(isset($config['special_tokens']) && isset($config['special_tokens'][$token]))
 		{
-			$ips = array_map('gethostbyname', $config['token_by_ip'][$token]);
-			if(in_array($_SERVER['REMOTE_ADDR'], $ips)) { return true; }
+			$special_token = $config['special_tokens'][$token];
+			if(empty($special_token)) { return true; }
+			else
+			{
+				$ips = array_map('gethostbyname', $special_token);
+				if(in_array($_SERVER['REMOTE_ADDR'], $ips)) { return true; }
+			}
 		}
 		else { return false; }
 	}
