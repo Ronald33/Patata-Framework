@@ -29,7 +29,7 @@ class URIDecoder
 				$this->class = array_shift($this->arguments);
 				if(\ENABLE_REST && !in_array($this->class, REST::getClassExceptions()))
 				{
-					if(isset($_GET['PATATA_REST_METHOD'])) { $this->method = REST::getMethods()[$_GET['PATATA_REST_METHOD']]; }
+					if($_SERVER['REQUEST_METHOD'] != 'OPTIONS' && isset($_GET['PATATA_REST_METHOD'])) { $this->method = REST::getMethods()[$_GET['PATATA_REST_METHOD']]; }
 					else { $this->method = REST::getMethods()[$_SERVER['REQUEST_METHOD']]; }
 				}
 				else { if($this->arguments) { $this->method = array_shift($this->arguments); } }
