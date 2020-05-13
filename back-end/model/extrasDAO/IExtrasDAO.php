@@ -1,5 +1,5 @@
 <?php
 interface IExtrasDAO
 {
-  	public function getField($table, $field);
+  	public function getEnumValues($table, $field);
 }

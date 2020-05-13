@@ -1,13 +1,6 @@
 <?php
 abstract class Helper
 {
-	public static function respondWithJSON($message, $code)
-	{
-		http_response_code($code);
-		header('Content-Type: application/json; charset=UTF-8');
-		echo json_encode($message, JSON_NUMERIC_CHECK);
-	}
-
 	private static function setProperty($destinationReflection, $name, &$destination, $value)
 	{
 		$propDest = $destinationReflection->getProperty($name);
@@ -56,11 +49,6 @@ abstract class Helper
     {
         return json_decode(file_get_contents('php://input'));
     }
-
-	public static function getBodyRequest()
-	{
-		return json_decode(file_get_contents('php://input'));
-	}
 
 	public static function getCurrentTimestamp($timezone = 'America/Lima')
 	{
