@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Patata\Validator;
+namespace modules\patata\validator;
 
 abstract class Rule
 {
@@ -28,6 +28,11 @@ abstract class Rule
         if(strlen(trim($value)) > 0) { return true; }
         else { return false; }
     }
+    public static function isObject($value)
+    {
+        if(is_object($value)) { return true; }
+        else { return false; }
+    }
     public static function isPositive($value)
     {
         if(self::isFloat($value) && $value > 0 ) { return true; }
@@ -47,6 +52,7 @@ abstract class Rule
         else { return false; }
     }
     public static function lengthIsLessThan($value, $size) { return strlen($value) < $size; }
+    public static function lengthIsGreaterThan($value, $size) { return strlen($value) > $size; }
     public static function isIn($value, $array) { return in_array($value, $array); }
     public static function hasElements($array = array())
     {
@@ -70,4 +76,30 @@ abstract class Rule
         else { return true; }
     }
     public static function isDNI($value) { return self::isRegex($value, '/^[0-9]{8}$/'); }
+
+    public static function isUnique($value, $table, $column, $condition = '1')
+    {
+        $extras_dao = new \ExtrasDAO();
+        return $extras_dao->isUnique($value, $table, $column, $condition);
+    }
+
+    public static function fileWasUploaded($value)
+    {
+        if(isset($value['tmp_name']) && $value['error'] != 1) { return true; }
+        else { return false; }
+    }
+
+    public static function sizeIsLessThan($value, $maxSize)
+    {
+        if($value['size'] > $maxSize) { return false; }
+        else { return true; }
+    }
+
+    public static function typeIsInArray($value, $allowedTypes)
+    {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $value['tmp_name']);
+        if(in_array($mime, $allowedTypes)) { return true; }
+        else { return false; }
+    }
 }

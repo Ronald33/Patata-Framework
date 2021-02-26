@@ -1,10 +1,9 @@
 <?php
-namespace Modules\Patata\DB;
+namespace modules\patata\db;
 
 require_once(__DIR__ . '/Message.php');
 
-require_once(__DIR__ . '/../../constants.php');
-require_once(\Modules\PATH_CORE . '/IError.php');
+require_once(PATH_BASE . '/core/IError.php');
 
 use \Core\IError;
 
@@ -15,15 +14,19 @@ class DB
 	private $sql;
 	private $stmt;
 	private $isTransaction;
-	
+	private $error;
 	private static $instance;
+
+	private $config;
+    private static $path_config = __DIR__ . '/config.ini';
 	
-	private function __construct()
+	private function __construct(IError $error)
 	{
+		$this->error = $error;
 		try
 		{
-			$conf = parse_ini_file(__DIR__ . '/config.ini');
-			$source = $conf[$conf['ENVIRONMENT']];
+			$this->config = parse_ini_file(self::$path_config, true);
+			$source = $this->config[$this->config['ENVIRONMENT']];
 
 			$dsn = 'mysql:dbname=' . $source['DB_NAME'] . ';host=' . $source['HOST'] . ';charset=utf8';
 			$options = array
@@ -32,18 +35,16 @@ class DB
 				\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION/*, 
 				\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"*/
 			);
-			$this->dbh = new \PDO($dsn, $conf['USER'], $conf['PASSWORD'], $options);
+			$this->dbh = new \PDO($dsn, $source['USER'], $source['PASSWORD'], $options);
 		}
 		catch(\Exception $e) { $this->showError($e); }
 	}
 	
-	public static function getInstance()
+	public static function getInstance(IError $error)
 	{
-		if(self::$instance == NULL) { self::$instance = new DB(); }
+		if(self::$instance == NULL) { self::$instance = new DB($error); }
 		return self::$instance;
 	}
-
-	public function setError(IError $error) { $this->error = $error; }
 	
 	private function setSQL($sql) { $this->sql = $sql; }
 	private function setData($data) { $this->data = $data; }
@@ -71,7 +72,7 @@ class DB
         return $this->query($sql, $data);
 	}
 	
-	public function select($table, $fields, $where = '', $data = array(), $limit = array())
+	private function _select($table, $fields, $where, $data, $limit)
 	{
 		$a_fields = array();
 		if(is_array($fields))
@@ -88,7 +89,18 @@ class DB
 		$limit = empty($limit) ? '' : ' LIMIT ' . implode(', ', $limit);
 		$sql = 'SELECT ' . $fields . ' FROM ' . $table . $where . $limit;
 		$this->query($sql, $data);
+	}
+
+	public function select($table, $fields, $where = '', $data = array(), $limit = array())
+	{
+		$this->_select($table, $fields, $where, $data, $limit);
 		return $this->fetchObjectAll();
+	}
+
+	public function selectOne($table, $fields, $where = '', $data = array(), $limit = array())
+	{
+		$this->_select($table, $fields, $where, $data, $limit);
+		return $this->fetchObject();
 	}
 	
 	public function update($table, $replacements, $where, $data = array())
@@ -178,5 +190,5 @@ class DB
 		$this->error->showMessage($e->getMessage(), Message::$default, true);
 	}
 	
-	public function __clone() { throw new Exception('No se puede clonar la clase DB'); }
+	public function __clone() { throw new Exception('No se puede clonar la clase ' . __CLASS__); }
 }

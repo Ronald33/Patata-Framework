@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Patata\Validator;
+namespace modules\patata\validator;
 
 require_once(__DIR__ . '/Rule.php');
 require_once(__DIR__ . '/Message.php');
@@ -30,6 +30,12 @@ class Input
 	public function addRule($type)
 	{
 		$args = func_get_args();
+		$message = -1;
+		if(is_array($type))
+		{
+			$message = $type[1];
+			$type = $type[0];
+		}
         array_shift($args);
         array_unshift($args, $this->value);
         
@@ -41,7 +47,8 @@ class Input
 				if(!$result)
 				{
 					$this->valid = false;
-					array_push($this->messages, Message::get($type));
+					if($message === -1) { $message = Message::get($type); }
+					array_push($this->messages, $message);
 				}
 			}
 		}

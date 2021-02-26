@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Patata\Validator;
+namespace modules\patata\validator;
 
 require_once(__DIR__ . '/Input.php');
 
@@ -26,6 +26,13 @@ class Validator
 	public function addInputFromArray($name, $array, $key)
 	{
 		$value = isset($array[$key]) ? $array[$key] : NULL;
+		if(isset(func_get_args()[3])) { return $this->addInput($name, $value, func_get_args()[3]); }
+		else { return $this->addInput($name, $value); }
+	}
+
+	public function addInputFromObject($name, $object, $key)
+	{
+		$value = isset($object->$key) ? $object->$key : NULL;
 		if(isset(func_get_args()[3])) { return $this->addInput($name, $value, func_get_args()[3]); }
 		else { return $this->addInput($name, $value); }
 	}

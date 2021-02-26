@@ -4,8 +4,8 @@ require_once(PATH_BASE . '/modules/patata/error/Error.php');
 require_once(__DIR__ . '/../Validator.php');
 
 use PHPUnit\Framework\TestCase;
-use Modules\Patata\Validator\Validator;
-use Modules\Patata\Error\Error;
+use modules\patata\validator\Validator;
+use modules\patata\error\Error;
 
 class TestValidator extends TestCase
 {

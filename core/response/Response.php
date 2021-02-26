@@ -1,31 +1,45 @@
 <?php
 namespace Core\Response;
 
-abstract class Response
+class Response
 {
+	private static $instance;
+
+	private function __construct() {  }
+
+	public static function getInstance()
+	{
+		if(self::$instance == NULL) { self::$instance = new Response(); }
+		return self::$instance;
+	}
+
 	// Ok
-	public static function s200($message = '') { self::respondWithJSON($message, 200); }
+	public function s200($message = '') { self::respondWithJSON($message, 200); }
 	// Nuevo elemento creado (usualmente usado despues de PUT)
-	public static function s201($message = '') { self::respondWithJSON($message, 201); }
+	public function s201($message = '') { self::respondWithJSON($message, 201); }
+	// Respuesta a un patch
+	public function s204() { self::respondWithJSON('', 204); }
 	// Solicitud erronea
-	public static function s400($message = '') { self::respondWithJSON($message, 400); }
+	public function s400($message = '') { self::respondWithJSON($message, 400); }
 	// No se tiene la autorizacion
-	public static function s401($message = '') { self::respondWithJSON($message, 401); }
+	public function s401($message = '') { self::respondWithJSON($message, 401); }
 	// No se tiene los suficientes privilegios
-	public static function s403($message = '') { self::respondWithJSON($message, 403); }
+	public function s403($message = '') { self::respondWithJSON($message, 403); }
 	// Recurso no encontrado
-	public static function s404($message = '') { self::respondWithJSON($message, 404); }
+	public function s404($message = '') { self::respondWithJSON($message, 404); }
 	// Conflicto en la peticion
-	public static function s409($message = '') { self::respondWithJSON($message, 409); }
+	public function s409($message = '') { self::respondWithJSON($message, 409); }
 	// Error en el servidor
-	public static function s500($message = '') { self::respondWithJSON($message, 500); }
+	public function s500($message = '') { self::respondWithJSON($message, 500); }
 	// Metodo no implementado
-	public static function s501($message = '') { self::respondWithJSON($message, 501); }
+	public function s501($message = '') { self::respondWithJSON($message, 501); }
 	
-	public static function respondWithJSON($message, $code)
+	public function respondWithJSON($message, $code)
 	{
 		http_response_code($code);
 		header('Content-Type: application/json; charset=UTF-8');
 		die(json_encode($message, JSON_NUMERIC_CHECK));
 	}
+
+	public function __clone() { throw new \Exception('No se puede clonar la clase ' . __CLASS__); }
 }

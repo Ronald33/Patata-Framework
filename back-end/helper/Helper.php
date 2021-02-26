@@ -45,7 +45,7 @@ abstract class Helper
 		return $destination;
 	}
 
-	public static function getInputs()
+	public static function getBodyRequest()
     {
         return json_decode(file_get_contents('php://input'));
     }
@@ -68,6 +68,11 @@ abstract class Helper
 		$parts = explode(',', $base64Image);
 		$image = $parts[1];
 		return base64_decode($image);
+	}
+
+	public static function deleteFile($path)
+	{
+		if(file_exists($path) && !@unlink($path)) { throw new Exception('El archivo no pudo ser eliminado'); }
 	}
 
 	/*public static function myFunction()

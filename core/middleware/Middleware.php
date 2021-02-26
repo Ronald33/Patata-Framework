@@ -2,16 +2,23 @@
 namespace core\middleware;
 
 require_once(PATH_BASE . '/core/uriDecoder/URIDecoder.php');
+require_once(PATH_BASE . '/core/IError.php');
+
 use core\uriDecoder\uriDecoder;
+use core\IError;
 
 class Middleware
 {
+	private $error;
+	
 	private static $instance;
 
 	private function __construct()
 	{
 
 	}
+	
+	public function setError(IError $error) { $this->error = $error; }
 
 	public static function getInstance()
 	{
@@ -22,7 +29,7 @@ class Middleware
 	public function execute(URIDecoder $uriDecoder)
 	{
 		$class = $uriDecoder->getClass();
-	    $method = $uriDecoder->getMethod();
+		$method = $uriDecoder->getMethod();
 		$arguments = $uriDecoder->getArguments();
 		
 		/* REST */
@@ -35,12 +42,17 @@ class Middleware
 			if($rest->getData() == 'usuario-login') // Access with token from config
 			{
 				$is_usuario_login = $class == 'Usuario' && $method == 'get' && isset($_GET['usuario']) && isset($_GET['contrasenha']);
-				if(!$is_usuario_login) { \Error\Error::showMessage('Usuario no autorizado', '', 401); die(); }
+				if(!$is_usuario_login) { $this->error->showMessage('Usuario no autorizado', '', 401); }
 			}
-			if($rest->getData() == 'cliente') // Access with token from config
+			if($rest->getData() == 'sistrami-anonimo') // Access with token from config
 			{
-				$alloweds = array('Producto.get', 'Reserva.post');
-				if(!in_array($class . '.' . $method, $alloweds)) { \Error\Error::showMessage('Usuario no autorizado', '', 401); die(); }
+				// Quiza se deba usar un switch
+				$alloweds = array('Persona.get', 'Extras.post', 'Persona.put', 'Persona.post', 'Tramite.post', 'Tramite.get', 'Oficina.get');
+				// if(!in_array($class . '.' . $method, $alloweds) && ($class == 'Tramite' && $method == 'get' && empty($_GET['registro']) && empty($_GET['remitente'])))
+				if(!in_array($class . '.' . $method, $alloweds))
+				{
+					$this->error->showMessage('Usuario no autorizado', '', 401);
+				}
 			}
 			/* End REST exceptions */
 		}

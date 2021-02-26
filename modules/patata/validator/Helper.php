@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Patata\Validator;
+namespace modules\patata\validator;
 
 abstract class Helper
 {

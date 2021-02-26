@@ -26,6 +26,7 @@ class REST
 	
 	public function setError(IError $error) { $this->error = $error; }
 	public function setToken(IToken $token) { $this->token = $token; }
+	public function getToken() { return $this->token; }
 
 	public function auth($class)
 	{
@@ -35,7 +36,7 @@ class REST
 		$headers = apache_request_headers();
 		if(isset($headers['authorization'])) { $token = $headers['authorization']; }
 		else if(isset($headers['Authorization']))  { $token = $headers['Authorization']; }
-		
+
 		if($token)
 		{
 			if($this->validateTokenFromConfig($token)) { $this->data = $token; }
@@ -62,10 +63,13 @@ class REST
 	{
 		if(isset($this->config['special_tokens']) && isset($this->config['special_tokens'][$token]))
 		{
-			$special_tokens = explode(',', $this->config['special_tokens'][$token]);
-			if(empty($special_tokens)) { return true; }
+			// $special_tokens = explode(',', $this->config['special_tokens'][$token]);
+			$special_tokens_list = $this->config['special_tokens'][$token];
+			
+			if(empty($special_tokens_list)) { return true; }
 			else
 			{
+				$special_tokens = explode(',', $special_tokens_list);
 				$ips = array_map('gethostbyname', $special_tokens);
 				if(in_array($_SERVER['REMOTE_ADDR'], $ips)) { return true; }
 			}
@@ -83,10 +87,10 @@ class REST
 		}
 		else { return []; }
 	}
-	public static function getAllowedMethodsFromClass($class)
+	public function getAllowedMethodsFromClass($class)
 	{
 		$allowed = array();
-		$rest_methods = parse_ini_file(self::$path_config, true)['methods'];
+		$rest_methods = $this->config['methods'];
 		foreach ($rest_methods as $key => $value) { if(is_callable(array('\\' . $class, $value))) { array_push($allowed, $key); } }
 		return implode(', ', $allowed);
 	}
