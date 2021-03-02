@@ -11,6 +11,7 @@ class UsuarioDAO implements IUsuarioDAO
         'usua_usuario' => 'usuario',
   		//'usua_contrasenha' => 'contrasenha',
         'usua_habilitado' => 'habilitado', 
+        'usua_tipo' => 'tipo', 
         'usua_pers_id' => 'pers_id'
     );
 

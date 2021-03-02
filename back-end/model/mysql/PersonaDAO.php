@@ -43,6 +43,7 @@ class PersonaDAO implements IPersonaDAO
         array_walk($results, array($this, 'setSubItems'));
         return $results;
     }
+
     public function selectById($id)
     {
         $db = Repository::getDB();
@@ -53,6 +54,26 @@ class PersonaDAO implements IPersonaDAO
         if(sizeof($results) == 1) { $this->setSubItems($results[0]); return $results[0]; }
         else { return NULL; }
     }
+
+    public function selectFiltered($filter)
+    {
+        $db = Repository::getDB();
+        $where = 'pers_nombres LIKE :filter OR pers_apellidos LIKE :filter OR pers_documento LIKE :filter';
+        $replacements = ['filter' => '%' . $filter . '%'];
+        $results = $db->select(self::$table, self::$selected_fields, $where, $replacements);
+        array_walk($results, array($this, 'setSubItems'));
+        return $results;
+    }
+
+    // public function selectByDocumento($documento)
+    // {
+    //     $db = Repository::getDB();
+    //     $where = 'pers_documento = :documento';
+    //     $replacements = array('documento' => $documento);
+    //     $results = $db->select(self::$table, self::$selected_fields, $where, $replacements);
+    //     if(sizeof($results) == 1) { return $results[0]; }
+    //     else { return NULL; }
+    // }
 
     public function insert(Persona $persona)
     {
