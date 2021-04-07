@@ -187,8 +187,8 @@ class DB
 	private function showError(\Exception $e)
 	{
 		if($this->isTransaction && $this->config['AUTO_ROLLBACK']) { $this->isTransaction = false; $this->rollback(); }
-		$this->error->showMessage($e->getMessage(), Message::$default, true);
+		$this->error->showMessage($e->getMessage(), Message::$default);
 	}
 	
-	public function __clone() { throw new Exception('No se puede clonar la clase ' . __CLASS__); }
+	public function __clone() { throw new \Exception('No se puede clonar la clase ' . __CLASS__); }
 }

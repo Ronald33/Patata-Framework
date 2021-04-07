@@ -31,8 +31,9 @@ abstract class UsuarioHelper
             {
                 $usuario->setContrasenha($object->contrasenha);
             }
+
+            return $usuario;
         }
         else { $response->s400($result); }
-        return $usuario;
     }
 }

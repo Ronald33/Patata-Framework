@@ -34,7 +34,7 @@ class Response
 	// Metodo no implementado
 	public function s501($message = '') { self::respondWithJSON($message, 501); }
 	
-	public function respondWithJSON($message, $code)
+	public static function respondWithJSON($message, $code)
 	{
 		http_response_code($code);
 		header('Content-Type: application/json; charset=UTF-8');

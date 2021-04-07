@@ -3,5 +3,5 @@ namespace core;
 
 interface IError
 {
-	public function showMessage($messageDevelopment, $messageProduction, $code);
+	public function showMessage($messageDevelopment, $messageProduction, $code = 500);
 }

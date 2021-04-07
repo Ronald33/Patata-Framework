@@ -6,9 +6,11 @@ abstract class PersonaHelper
         $response = Repository::getResponse();
         $result = PersonaValidator::validate($object);
         
-        if($result === true) { $persona = Helper::cast('Persona', $object); }
+        if($result === true)
+        {
+            $persona = Helper::cast('Persona', $object);
+            return $persona;
+        }
         else { $response->s400($result); }
-        
-        return $persona;
     }
 }

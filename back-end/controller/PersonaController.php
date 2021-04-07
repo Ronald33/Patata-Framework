@@ -19,11 +19,7 @@ class PersonaController
             else { $this->view->s200($result); }
         }
         else if(isset($_GET['filter'])) { $this->view->s200($this->dao->selectFiltered($_GET['filter'])); }
-        else
-        {
-            $result = $this->dao->selectAll();
-            $this->view->s200($result);
-        }
+        else { $this->view->s200($this->dao->selectAll()); }
     }
 
     public function post()
