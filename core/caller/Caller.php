@@ -4,42 +4,54 @@ require_once(__DIR__ . '/Message.php');
 
 class Caller
 {
-	private $config;
-	private $path;
+	private $_config;
+	private $_pathControllers;
 
 	private static $instance;
 	
-	private function __construct($path)
+	private function __construct($pathControllers, $extra_configuration_path)
 	{
-		$this->config = parse_ini_file(__DIR__ . '/config.ini');
-		$this->path = $path;
+		$this->_pathControllers = $pathControllers;
+
+		$extra_config = $extra_configuration_path !== NULL ? parse_ini_file($extra_configuration_path) : [];
+		$this->_config = array_merge(parse_ini_file(__DIR__ . DIRECTORY_SEPARATOR . 'config.ini'), $extra_config);
+
+		$this->checkConfigAsserts();
 	}
 
-	public static function getInstance($path = '.')
+	private function checkConfigAsserts()
 	{
-		if(self::$instance == NULL) { self::$instance = new Caller($path); }
+		assert(ctype_alnum($this->_config['CONTROLLER_SUFFIX']), 'In Caller, CONTROLLER_SUFFIX is invalid');
+		assert(ctype_alnum($this->_config['S404_CONTROLLER']), 'In Caller, S404_CONTROLLER is invalid');
+		assert(ctype_alnum($this->_config['S404_METHOD']), 'In Caller, S404_METHOD is invalid');
+	}
+
+	public static function getInstance($pathControllers, $extra_configuration_path = NULL)
+	{
+		if(self::$instance == NULL) { self::$instance = new Caller($pathControllers, $extra_configuration_path); }
 		return self::$instance;
 	}
 	
-	public function execute($class, $method, $arguments)
+	public function execute($class, $method, $arguments = [])
 	{
-		$result = self::call($class, $method, $arguments); // Ejecuta la clase y el metodo enviados por parametro
+		$result = $this->call($class, $method, $arguments); // Ejecuta la clase y el metodo enviados por parametro
 		
 		if(is_string($result)) // Si ocurrio un problema en el llamado
 		{
+			$class404 = $this->_config['S404_CONTROLLER'];
+			$method404 = $this->_config['S404_METHOD'];
 			// Control para evitar un bucle infinito en caso no exista el controlador o el encargado de mostrar los errores
-			if($class == $this->config['S404_CONTROLLER'] && $method == $this->config['S404_METHOD']) { die($result); }
-			else { self::s404($result); }
+			if($class == $class404 && $method == $method404) { die($result); }
+			else { $this->execute($class404, $method404); }
 		}
 	}
 	
     // Funcion encargada de verificar que el controlador pueda ser instanciado, en caso de exito retorna TRUE
     // Caso contrario retorna un string, el cual indica el error a solucionar
-	private function call($class, $method, $arguments)
+	private function call($class, $method, $arguments = [])
 	{
-		$controller = $class . $this->config['CONTROLLER_SUFFIX'];
-		//$file = $this->config['CONTROLLER_PATH'] . '/' . $controller . '.php';
-		$file = $this->path . '/' . $controller . '.php';
+		$controller = $class . $this->_config['CONTROLLER_SUFFIX'];
+		$file = $this->_pathControllers . '/' . $controller . '.php';
 		
 		if(file_exists($file))
 		{
@@ -59,15 +71,5 @@ class Caller
 			else { return Message::noClass($controller); }
 		}
 		else { return Message::noFile($file); }
-	}
-	
-	public function s404($result)
-	{
-		$controller = $this->config['S404_CONTROLLER'] . $this->config['CONTROLLER_SUFFIX'];
-		$file = $this->path . '/' . $controller . '.php';
-		require_once($file);
-		$instance = new $controller;
-		$data = array($instance, $this->config['S404_METHOD']);
-		call_user_func_array($data, [$result]);
 	}
 }

@@ -1,55 +1,74 @@
 <?php
-namespace Modules\Patata\Render;
-
-require_once(__DIR__ . '/Message.php');
-require_once(PATH_BASE . '/core/IError.php');
-
-use \core\IError;
+namespace modules\patata\render;
 
 class Render
 {
     private $config;
-    private $data;
+    private $pathHeader;
+    private $pathFooter;
     private $template;
     private $pieces;
     private $styles;
     private $scripts;
-    private $error;
 
-    public function __construct($data = [])
+    public function __construct($extra_configuration_path = NULL, $path_header = NULL, $path_footer = NULL)
     {
-		$this->config = parse_ini_file(__DIR__ . '/config.ini', true);
-		$this->config['data']['scripts'] = &$this->scripts;
-		$this->config['data']['styles'] = &$this->styles;
+		$extra_config = $extra_configuration_path !== NULL ? parse_ini_file($extra_configuration_path, true) : [];
+        $this->config = array_merge(parse_ini_file(__DIR__ . DIRECTORY_SEPARATOR . 'config.ini', true), $extra_config);
 
-		$this->data = $data;
-        
+		$this->checkConfigAsserts();
+
+		if($path_header != NULL) { $this->pathHeader = $path_header; }
+		if($path_header != NULL) { $this->pathFooter = $path_footer; }
+
+		$this->template = '';
+		
 		$this->pieces = [];
 		$this->pieces['simple'] = [];
 		$this->pieces['loop'] = [];
-		
-        $this->template = '';
+
         $this->styles = '';
         $this->scripts = '';
     }
 
-    public function setError(IError $error) { $this->error = $error; }
-	
-	public function &getConfig() { return $this->config; }
+	private function checkConfigAsserts()
+	{
+		assert(is_string($this->config['TAG_OPEN']), 'In Render, TAG_OPEN is invalid');
+		assert(is_string($this->config['TAG_CLOSE']), 'In Render, TAG_CLOSE is invalid');
+		assert(is_string($this->config['TAG_LOOP']), 'In Render, TAG_LOOP is invalid');
+	}
 
-    public function addTemplate($filename)
+	public function setContentToTemplate($content) { $this->template = $content; }
+	public function prependContentToTemplate($content) { $this->template = $this->template . $content; }
+	public function appendContentToTemplate($content) { $this->template .= $content; }
+
+	public function setFileToTemplate($filename)
 	{
-		if(file_exists($filename)) { $this->template .= file_get_contents($filename); }
-		else { $this->error->showMessage(Message::noFile($filename), Message::notFound()); }
+		assert(file_exists($filename), 'El archivo: ' . $filename . ' no existe');
+		$this->template = file_get_contents($filename);
     }
-    
-    public function addContent($content) { $this->template .= $content; }
-    public function setContent($content) { $this->template = $content; }
-	
-	private function setPieces()
+	public function prependFileToTemplate($filename)
 	{
-		$template = $this->getTemplate(); /* Sacamos una copia del template */
-		$pattern = '/<!--' . $this->config['TAG_OPEN'] . $this->config['TAG_LOOP'] . '([a-zA-Z0-9]+)' . $this->config['TAG_CLOSE'] . '-->/';
+		assert(file_exists($filename), 'El archivo: ' . $filename . ' no existe');
+		$this->template = file_get_contents($filename) . $this->template;
+    }
+	public function appendFileToTemplate($filename)
+	{
+		assert(file_exists($filename), 'El archivo : ' . $filename . ' no existe');
+		$this->template .= file_get_contents($filename);
+    }
+
+    private function getTemplate()
+	{
+		if($this->pathHeader != NULL) { $this->prependFileToTemplate($this->pathHeader); }
+		if($this->pathFooter != NULL) { $this->appendFileToTemplate($this->pathFooter); }
+		return $this->template;
+	}
+	
+	private function setPieces($replacements)
+	{
+		$template = $this->getTemplate();
+		$pattern = '/<!--' . $this->config['TAG_OPEN'] . $this->config['TAG_LOOP'] . '(.+)' . $this->config['TAG_CLOSE'] . '-->/';
 		$offset = 0;
 		$flag = true;
 		$counter = 0;
@@ -68,14 +87,13 @@ class Render
 
 				if($position_close) /* Si existe el tag de cierre */
 				{
-					if(isset($this->data[$name]) && is_array($this->data[$name]))
+					if(isset($replacements[$name]) && is_array($replacements[$name]))
 					{
-						$end = $position_close - 1;
 						if($position_open > 0) { $this->pieces['simple'][$counter++] = substr($template, 0, $position_open); }
 						$this->pieces['loop'][$counter++] = ['name' => $name, 'content' => substr($template, $begin, $position_close - $begin)];
 						$template = substr($template, $position_close + $tag_length);
 					}
-					else { $template = substr_replace($template, '', $position_open, $position_close + $tag_length - $position_open); }
+					else{ $template = substr_replace($template, '', $position_open, $position_close + $tag_length - $position_open); }
 				}
 				else { $offset = $begin; }
 			}
@@ -85,62 +103,64 @@ class Render
 		if($template) { $this->pieces['simple'][$counter++] = $template; }
 	}
 	
-	private function getData()
+	private function getReplacements($replacements)
 	{
-		$merged = array_merge($this->config['data'], $this->data);
-		$data = [
+		if(isset($this->config['REPLACEMENTS']) && is_array($this->config['REPLACEMENTS'])) { $replacements = array_merge($this->config['REPLACEMENTS'], $replacements); }
+
+		$replacements['styles'] = $this->styles;
+		$replacements['scripts'] = $this->scripts;
+
+		$results = [
 			'search' => [], 
 			'replace' => []
 		];
-		
-		foreach($merged as $key => $value)
+
+		foreach($replacements as $key => $value)
 		{
 			if(!is_array($value))
 			{
-				array_push($data['search'], '/' . $this->config['TAG_OPEN'] . $key . $this->config['TAG_CLOSE'] . '/');
-				array_push($data['replace'], $value);
+				array_push($results['search'], '/' . $this->config['TAG_OPEN'] . $key . $this->config['TAG_CLOSE'] . '/');
+				array_push($results['replace'], $value);
 			}
 		}
 		
-		array_push($data['search'], '/<!--' . $this->config['TAG_OPEN'] . $this->config['TAG_LOOP'] . '.+' . $this->config['TAG_CLOSE'] . '-->/');
-		array_push($data['replace'], '');
+		array_push($results['search'], '/<!--' . $this->config['TAG_OPEN'] . $this->config['TAG_LOOP'] . '.+' . $this->config['TAG_CLOSE'] . '-->/');
+		array_push($results['replace'], '');
 		
 		if($this->config['CLEAR'])
 		{
-			array_push($data['search'], '/' . $this->config['TAG_OPEN'] . '.+' . $this->config['TAG_CLOSE'] . '/');
-			array_push($data['replace'], '');
+			array_push($results['search'], '/' . $this->config['TAG_OPEN'] . '.+' . $this->config['TAG_CLOSE'] . '/');
+			array_push($results['replace'], '');
 		}
-		
-		return $data;
+
+		return $results;
 	}
 	
-	private function replace()
+	private function replace($replacements)
 	{
-		$data = $this->getData();
+		$data = $this->getReplacements($replacements);
 		foreach($this->pieces['simple'] as &$piece) { $piece = preg_replace($data['search'], $data['replace'], $piece); }
 	}
 	
-	public function get($include_HF = NULL)
+	public function get($replacements = [])
 	{
-		if($include_HF === NULL) { $this->include_HF = $this->config['INCLUDE_HF']; }
-        else { $this->include_HF = $include_HF; }
+		assert(is_array($replacements), 'La plantilla necesita un array de datos');
+		$this->setPieces($replacements);
+		$this->replace($replacements); /* Reemplazamos las piezas planas (sin loops) */
 
-		$this->setPieces();
-		$this->replace(); /* Reemplazamos las piezas planas (sin loops) */
-		
 		foreach($this->pieces['loop'] as &$piece)
 		{
-			$name = $piece['name'];
 			$content = $piece['content'];
-			
-			$data = $this->data[$name];
+			$data = $replacements[$piece['name']];
+			$piece = '';
 			$replaced = '';
+			
 			foreach($data as $d)
 			{
 				if(!is_array($d)) { $d = array('number' => $d); }
-				$r = new Render($d);
-				$r->setContent($content);
-				$replaced .= $r->get(false);
+				$r = new Render();
+				$r->setContentToTemplate($content);
+				$replaced .= $r->get($d);
 			}
 			$piece = $replaced;
 		}
@@ -151,32 +171,6 @@ class Render
 		return implode($pieces);
 	}
     
-    public function addStyle($style) { $this->styles .= self::getStyle($style); }
-    public function addScript($script) { $this->scripts .= self::getScript($script); }
-    
-    private function addTemplateToStart($filename)
-	{
-		if(file_exists($filename)) { $this->template = file_get_contents($filename) . $this->template; }
-		else { $this->error->showMessage(Message::noFile($filename), Message::notFound()); }
-    }
-
-    private function getTemplate()
-	{
-		if($this->include_HF)
-		{
-			$this->addTemplateToStart($this->config['PATH_HEADER']);
-			$this->addTemplate($this->config['PATH_FOOTER']);
-		}
-		return $this->template;
-	}
-    
-    private static function getStyle($style)
-	{
-		return '<link rel="stylesheet" type="text/css" href="' . $style . '" media="screen" />';
-	}
-	
-	private static function getScript($script)
-	{
-		return '<script type="text/javascript" src="' . $script . '" charset="UTF-8"></script>';
-	}
+    public function addStyle($style) { $this->styles .= '<link rel="stylesheet" type="text/css" href="' . $style . '" media="screen" />'; }
+    public function addScript($script) { $this->scripts .= '<script type="text/javascript" src="' . $script . '" charset="UTF-8"></script>'; }
 }

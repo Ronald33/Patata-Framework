@@ -3,37 +3,12 @@ abstract class UsuarioHelper
 {
     public static function castToUsuario($object)
     {
-        $response = Repository::getResponse();
-        $usuario = NULL;
-        $result = UsuarioValidator::validate($object);
-        
-        if($result === true)
-        {
-            switch($object->tipo)
-            {
-                case 'ADMINISTRADOR':
-                    $usuario = Helper::cast('Administrador', $object);
-                break;
-                case 'VENDEDOR':
-                    $usuario = Helper::cast('Vendedor', $object);
-                break;
-            }
+        $usuario = Helper::cast($object->tipo == 'ADMINISTRADOR' ? 'Administrador' : 'Vendedor', $object);
+        $usuario->setPersona(Helper::cast('Persona', $object->persona));
 
-            $persona = NULL;
-            if(isset($object->persona->id)) { $persona = Helper::cast('Persona', $object->persona); }
-            else { $persona = PersonaHelper::castToPersona($object->persona); }
-            $usuario->setPersona($persona);
-            
-            // Asignamos los valores por defecto
-            $usuario->setHabilitado(true);
+        // Asignamos los valores por defecto
+        if($usuario->getId() == NULL) { $usuario->setHabilitado(true); }
 
-            if(!isset($object->id) || (isset($object->id) && isset($object->cambiarContrasenha) && $object->cambiarContrasenha))
-            {
-                $usuario->setContrasenha($object->contrasenha);
-            }
-
-            return $usuario;
-        }
-        else { $response->s400($result); }
+        return $usuario;
     }
 }

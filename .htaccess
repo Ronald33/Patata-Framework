@@ -1,2 +1,2 @@
 RewriteEngine On
-RewriteRule !(^front-end|favicon|uploads|modules) index.php
+RewriteRule !(^front-end|favicon|uploads|modules|pdfs) index.php

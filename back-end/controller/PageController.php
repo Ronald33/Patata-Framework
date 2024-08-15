@@ -19,7 +19,6 @@ class PageController
 
 	public function s404()
 	{
-		$data = array();
-		$this->view->s404($data);
+		$this->view->s404();
 	}
 }

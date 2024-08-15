@@ -1,99 +1,108 @@
 <?php
 namespace core\rest;
 
-require_once(PATH_BASE . '/core/IToken.php');
-require_once(PATH_BASE . '/core/IError.php');
+require_once(__DIR__ . '/Helper.php');
 
-use core\IError;
-use core\IToken;
+use core\rest\token\IToken;
+use Exception;
 
 class REST
 {
-	private $config;
-	private $data;
-	private $token;
-	private $error;
+	private $_config;
+	private $_data;
+	private $_token;
+	private $_dataIsDecodable;
 	private static $instance;
-	private static $path_config = __DIR__ . '/config.ini';
 	
-	private function __construct() { $this->config = parse_ini_file(self::$path_config, true); }
-
-	public static function getInstance()
+	private function __construct($extra_configuration_path)
 	{
-		if(self::$instance == NULL) { self::$instance = new REST(); }
+		$extra_config = $extra_configuration_path !== NULL ? parse_ini_file($extra_configuration_path, true) : [];
+        $this->_config = array_merge(parse_ini_file(__DIR__ . DIRECTORY_SEPARATOR . 'config.ini', true), $extra_config);
+
+		$this->checkConfigAsserts();
+
+		$this->_dataIsDecodable = false;
+	}
+
+	private function checkConfigAsserts()
+	{
+		if(isset($this->_config['CLASS_EXCEPTIONS'])) { assert(is_string($this->_config['CLASS_EXCEPTIONS']), 'In REST, CLASS_EXCEPTIONS is invalid'); }
+		if(isset($this->_config['SKIP_AUTH'])) { assert(is_string($this->_config['SKIP_AUTH']), 'In REST, SKIP_AUTH is invalid'); }
+		assert(is_array($this->_config['SPECIAL_TOKENS']), 'In REST, SPECIAL_TOKENS must be an array');
+		assert(ctype_alnum($this->_config['METHODS']['GET']), 'In RESTURIDecoder, METHODS[GET] is invalid');
+		assert(ctype_alnum($this->_config['METHODS']['POST']), 'In RESTURIDecoder, METHODS[POST] is invalid');
+		assert(ctype_alnum($this->_config['METHODS']['PUT']), 'In RESTURIDecoder, METHODS[PUT] is invalid');
+		assert(ctype_alnum($this->_config['METHODS']['DELETE']), 'In RESTURIDecoder, METHODS[DELETE] is invalid');
+		assert(ctype_alnum($this->_config['METHODS']['OPTIONS']), 'In RESTURIDecoder, METHODS[OPTIONS] is invalid');
+		assert(ctype_alnum($this->_config['METHODS']['PATCH']), 'In RESTURIDecoder, METHODS[PATCH] is invalid');
+	}
+
+	public static function getInstance($extra_configuration_path = NULL)
+	{
+		if(self::$instance == NULL) { self::$instance = new REST($extra_configuration_path); }
 		return self::$instance;
 	}
-	
-	public function setError(IError $error) { $this->error = $error; }
-	public function setToken(IToken $token) { $this->token = $token; }
-	public function getToken() { return $this->token; }
+
+	public function setToken(IToken $token) { $this->_token = $token; }
 
 	public function auth($class)
 	{
-		if($_SERVER['REQUEST_METHOD'] == 'OPTIONS' || in_array($class, $this->getClassExceptions())) { return true; }
+		if($_SERVER['REQUEST_METHOD'] == 'OPTIONS') { return true; }
+		if(isset($this->_config['CLASS_EXCEPTIONS']) && in_array($class, Helper::getArrayFromString($this->_config['CLASS_EXCEPTIONS']))) { return true; }
 
-		$token = NULL;
-		$headers = apache_request_headers();
-		if(isset($headers['authorization'])) { $token = $headers['authorization']; }
-		else if(isset($headers['Authorization']))  { $token = $headers['Authorization']; }
+		$token = $this->getTokenFromRequest();
 
 		if($token)
 		{
-			if($this->validateTokenFromConfig($token)) { $this->data = $token; }
+			if($this->validateTokenFromConfig($token)) { $this->_data = $token; }
 			else
 			{
-				$data = $this->token->decode($token);
-				if($data) { $this->data = $data; }
-				else { $this->error->showMessage('Token desconocido', '', 401); }
+				try { $this->_data = $this->_token->decode($token);	$this->_dataIsDecodable = true; }
+				catch(Exception $e) { return false; }
 			}
 		}
 		else
 		{
-			if(isset($this->config['skip_auth']))
+			if(isset($this->_config['SKIP_AUTH']))
 			{
-				$skip_auth = preg_split('/,/', $this->config['skip_auth'], NULL, PREG_SPLIT_NO_EMPTY);
-				$ips = array_map('gethostbyname', $skip_auth);
-				if(in_array($_SERVER['REMOTE_ADDR'], $ips)) { $this->data = 'SKIP-AUTH'; }
+				$ips = Helper::getIps($this->_config['SKIP_AUTH']);
+				if(in_array($_SERVER['REMOTE_ADDR'], $ips)) { $this->_data = 'SKIP-AUTH'; }
+				else { return false; }
 			}
-			else { $this->error->showMessage('Usuario no autorizado', '', 401); }
+			else { return false; }
 		}
+
+		return true;
 	}
 	
 	public function validateTokenFromConfig($token)
 	{
-		if(isset($this->config['special_tokens']) && isset($this->config['special_tokens'][$token]))
+		if(isset($this->_config['SPECIAL_TOKENS']) && isset($this->_config['SPECIAL_TOKENS'][$token]))
 		{
-			// $special_tokens = explode(',', $this->config['special_tokens'][$token]);
-			$special_tokens_list = $this->config['special_tokens'][$token];
-			
-			if(empty($special_tokens_list)) { return true; }
+			$alloweds = $this->_config['SPECIAL_TOKENS'][$token];
+			if($alloweds == '*') { return true; }
 			else
 			{
-				$special_tokens = explode(',', $special_tokens_list);
-				$ips = array_map('gethostbyname', $special_tokens);
+				$ips = Helper::getIps($alloweds);
 				if(in_array($_SERVER['REMOTE_ADDR'], $ips)) { return true; }
 			}
 		}
 		else { return false; }
 	}
 
-	public function getData() { return $this->data; }
-	public function getMethods() { return $this->config['methods']; }
-	public function getClassExceptions()
+	public function getData() { return $this->_data; }
+	public function getTokenFromRequest()
 	{
-		if(isset($this->config['class_exceptions']))
-		{
-			return preg_split('/,/', $this->config['class_exceptions'], NULL, PREG_SPLIT_NO_EMPTY);
-		}
-		else { return []; }
+		$token = NULL;
+		$headers = apache_request_headers();
+		if(isset($headers['authorization'])) { $token = $headers['authorization']; }
+		else if(isset($headers['Authorization']))  { $token = $headers['Authorization']; }
+		return $token;
 	}
-	public function getAllowedMethodsFromClass($class)
-	{
-		$allowed = array();
-		$rest_methods = $this->config['methods'];
-		foreach ($rest_methods as $key => $value) { if(is_callable(array('\\' . $class, $value))) { array_push($allowed, $key); } }
-		return implode(', ', $allowed);
-	}
+
+	public function getMethods() { return $this->_config['METHODS']; }
+	public function getToken() { return $this->_token; }
+	public function dataIsDecodable() { return $this->_dataIsDecodable; }
 
 	public function __clone() { throw new \Exception('No se puede clonar la clase ' . __CLASS__); }
 }

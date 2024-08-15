@@ -15,43 +15,41 @@ class PersonaController
         if($id)
         {
             $result = $this->dao->selectById($id);
-            if($result == NULL) { $this->view->s404(); }
-            else { $this->view->s200($result); }
+            if($result) { $this->view->j200($result); }
+            else { $this->view->j404(); }
         }
-        else if(isset($_GET['filter'])) { $this->view->s200($this->dao->selectFiltered($_GET['filter'])); }
-        else { $this->view->s200($this->dao->selectAll()); }
+        else if(isset($_GET['wildcard'])) { $this->view->j200($this->dao->selectByWildcard($_GET['wildcard'])); }
+        else { $this->view->j200($this->dao->selectAll()); }
     }
 
     public function post()
     {
-        $object = Helper::getBodyRequest();
-        $persona = PersonaHelper::castToPersona($object);
+        $payload = Helper::getPayload();
+        $result = PersonaValidator::validate($payload);
+        if($result !== true) { $this->view->j400($result); }
+        $persona = Helper::cast('Persona', $payload);
         $this->dao->insert($persona);
-        $this->view->s201($persona);
+        $this->view->j201($persona);
     }
 
     public function put($id = null)
     {
-        if($id == null) { $this->view->s501(); }
-        else
-        {
-            $object = Helper::getBodyRequest();
-            $persona = PersonaHelper::castToPersona($object);
-            $persona->setId($id);
-            $this->dao->update($persona);
-            $this->view->s201($persona);
-        }
+        if($id == null) { $this->view->j501(); }
+        
+        $payload = Helper::getPayload();
+        $result = PersonaValidator::validate($payload, $id);
+        if($result !== true) { $this->view->j400($result); }
+        $persona = Helper::cast('Persona', $payload);
+        $persona->setId($id);
+        $this->dao->update($persona);
+        $this->view->j201($persona);
     }
     
     public function delete($id = null)
     {
-        if($id == null) { $this->view->s501(); }
-        else { $this->dao->delete($id); $this->view->s200(); }
+        if($id == null) { $this->view->j501(); }
+        $this->dao->delete($id); $this->view->j200();
     }
 
-    public function options()
-    {
-        $rest = Repository::getRest();
-        header('Access-Control-Allow-Methods: ' . $rest->getAllowedMethodsFromClass(__CLASS__));
-    }
+    public function options() { header('Access-Control-Allow-Methods: ' . Helper::getAllowedMethodsFromClass(__CLASS__)); }
 }

@@ -1,29 +1,13 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', TRUE);
-ini_set('display_startup_errors', TRUE);
+require_once(__DIR__ . DIRECTORY_SEPARATOR . 'load-config.php');
+require_once(__DIR__ . DIRECTORY_SEPARATOR . 'configurator.php');
+require_once(__DIR__ . DIRECTORY_SEPARATOR . 'constants.php');
+require_once(__DIR__ . DIRECTORY_SEPARATOR . 'for-custom' . DIRECTORY_SEPARATOR . 'Repository.php');
+require_once(__DIR__ . DIRECTORY_SEPARATOR . 'autoload.php');
 
-require_once('constants.php');
-require_once('core/patataException/PatataException.php');
-require_once('autoload.php');
-require_once('Repository.php');
-
-use core\PatataException\PatataException;
-
-try
-{
-	$config = parse_ini_file('config.ini');
-	$uriDecoder = Repository::getURIDecoder();
-	$middleware = Repository::getMiddleware();
-	$caller = Repository::getCaller(PATH_CONTROLLER);
-	if($config['ENABLE_REST'])
-	{
-		header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Headers: *');
-		$uriDecoder->setREST(Repository::getREST());
-	}
-	$uriDecoder->execute();
-	$middleware->execute($uriDecoder);
-	$caller->execute($uriDecoder->getClass(), $uriDecoder->getMethod(), $uriDecoder->getArguments());
-}
-catch(Exception $e) { PatataException::jprint($e); }
+$uriDecoder = Repository::getURIDecoder();
+$middlewareExecutor = Repository::getMiddlewareExecutor();
+if(ENABLE_REST) { $middlewareExecutor->add(Repository::getRESTMiddleware($uriDecoder)); }
+$middlewareExecutor->add(Repository::getMyMiddleware());
+if($middlewareExecutor->execute() === false) { Repository::getResponse()->j401(); }
+Repository::getCaller()->execute($uriDecoder->getClass(), $uriDecoder->getMethod(), $uriDecoder->getArguments());

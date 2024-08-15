@@ -1,20 +1,19 @@
 <?php
 class PageView
 {
-    public function index($data = array())
+    public function index($data = [])
 	{
-		$render = Repository::getRender($data);
-		$render->addTemplate(PATH_HTML . '/page/index.html');
+		$render = Repository::getRender();
+		$render->setFileToTemplate(PATH_HTML . '/page/index.html');
 		$render->addStyle(PATH_CSS . '/page/styles.css');
 		$render->addScript(PATH_JS . '/page/scripts.js');
-		echo $render->get(true);
+		echo $render->get($data);
 	}
 
-    public function s404($data = array())
+    public function s404($data = [])
 	{
-		$render = Repository::getRender($data, false);
-		$render->addTemplate(PATH_HTML . '/page/404.html');
-		$render->addStyle(PATH_CSS . '/page/404.css');
-		echo $render->get(false);
+		$render = Repository::getRender(false);
+		$render->setFileToTemplate(PATH_HTML . '/page/404.html');
+		echo $render->get($data);
 	}
 }

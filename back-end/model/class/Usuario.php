@@ -62,7 +62,7 @@ abstract class Usuario
      */ 
     public function getContrasenha()
     {
-        return $this->contrasenha;
+        return md5($this->contrasenha);
     }
 
     /**
@@ -72,7 +72,7 @@ abstract class Usuario
      */ 
     public function setContrasenha($contrasenha)
     {
-        $this->contrasenha = md5($contrasenha);
+        $this->contrasenha = $contrasenha;
 
         return $this;
     }

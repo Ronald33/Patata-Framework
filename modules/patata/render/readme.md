@@ -2,18 +2,6 @@
 
 Es una motor de plantillas que permite separar la lógica de negocios (datos) de la presentación (HTML) mediante el uso de etiquetas ({{etiqueta}}).
 
-## Dependencias
-
-La libreria hace uso de una clase llamada Error, la cual se encarga de mostrar los errores y que debe de implementar al siguiente clase:
-
-```php
-<?php
-interface IError
-{
-	public function showMessage($messageDevelopment, $messageProduction, $code);
-}
-```
-
 ## Uso de la librería
 
 Para el uso de la libreria son necesarios 2 componentes: Un array asociativo y una plantilla.
@@ -78,8 +66,6 @@ Si se tiene un array asociativo, cuyos indices son números(['Apendice 1', 'Apen
 
 | Método | Descripción |
 | ------ | ------ |
-| setError(IError $error) | Asigna la clase encargada de mostrar los errores en la ejecución de la libreria. |
-| &getConfig() | Obtiene la referencia de la configuración. |
 | setContent($content) | Asigna el contenido de $content a la plantilla. |
 | addContent($content) | Agrega el contenido de $content a la plantilla. |
 | addTemplate($filename) | Asigna el contenido del archivo $filename como plantilla. |

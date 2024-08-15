@@ -1,55 +1,62 @@
 <?php
 namespace modules\patata\db;
 
-require_once(__DIR__ . '/Message.php');
-
-require_once(PATH_BASE . '/core/IError.php');
-
-use \Core\IError;
-
 class DB
 {
-	private $db;
 	private $dbh;
-	private $sql;
 	private $stmt;
 	private $isTransaction;
-	private $error;
 	private static $instance;
 
 	private $config;
-    private static $path_config = __DIR__ . '/config.ini';
 	
-	private function __construct(IError $error)
+	private function __construct($extra_configuration_path)
 	{
-		$this->error = $error;
-		try
-		{
-			$this->config = parse_ini_file(self::$path_config, true);
-			$source = $this->config[$this->config['ENVIRONMENT']];
+		$extra_config = $extra_configuration_path !== NULL ? parse_ini_file($extra_configuration_path, true) : [];
+		$this->config = array_merge(parse_ini_file(__DIR__ . DIRECTORY_SEPARATOR . 'config.ini', true), $extra_config);
 
-			$dsn = 'mysql:dbname=' . $source['DB_NAME'] . ';host=' . $source['HOST'] . ';charset=utf8';
-			$options = array
-			(
-				\PDO::ATTR_PERSISTENT => true, 
-				\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION/*, 
-				\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"*/
-			);
-			$this->dbh = new \PDO($dsn, $source['USER'], $source['PASSWORD'], $options);
+		$this->checkConfigAsserts();
+
+		$environment = $this->config[$this->config['ENVIRONMENT']];
+
+		$dsn = 'mysql:dbname=' . $environment['DB_NAME'] . ';host=' . $environment['HOST'];
+		$options = 
+		[
+			\PDO::ATTR_PERSISTENT => true, 
+			\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, 
+			\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . $this->config['DB_CHARSET'], 
+			\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET time_zone = "' . $this->config['TIME_ZONE'] . '"'
+		];
+		$this->dbh = new \PDO($dsn, $environment['USER'], $environment['PASSWORD'], $options);
+	}
+
+	private function checkConfigAsserts()
+	{
+		$environments = ['DEVELOPMENT', 'PRODUCTION'];
+		$booleans = ['1', ''];
+
+		assert(in_array($this->config['AUTO_ROLLBACK'], $booleans), 'In DB, AUTO_ROLLBACK must be a bool');
+		assert(in_array($this->config['ENVIRONMENT'], $environments), 'In DB, ENVIRONMENT is invalid');
+		assert(is_string($this->config['DB_CHARSET']), 'In DB, DB_CHARSET is invalid');
+		assert(is_string($this->config['TIME_ZONE']), 'In DB, TIMEZONE is invalid');
+		assert(in_array($this->config['FETCH_OBJECT'], $booleans), 'In DB, FETCH_OBJECT must be a bool');
+
+		foreach($environments as $environment)
+		{
+			assert(is_string($this->config[$environment]['HOST']), 'In DB, HOST (' . $environment . ') is invalid');
+			assert(is_string($this->config[$environment]['USER']), 'In DB, HOST (' . $environment . ') is invalid');
+			assert(is_string($this->config[$environment]['PASSWORD']), 'In DB, PASSWORD (' . $environment . ') is invalid');
+			assert(is_string($this->config[$environment]['DB_NAME']), 'In DB, DB_NAME (' . $environment . ') is invalid');
 		}
-		catch(\Exception $e) { $this->showError($e); }
 	}
 	
-	public static function getInstance(IError $error)
+	public static function getInstance($extra_configuration_path = NULL)
 	{
-		if(self::$instance == NULL) { self::$instance = new DB($error); }
+		if(self::$instance == NULL) { self::$instance = new DB($extra_configuration_path); }
 		return self::$instance;
 	}
 	
-	private function setSQL($sql) { $this->sql = $sql; }
-	private function setData($data) { $this->data = $data; }
-	
-	public function query($sql, $data = array())
+	public function query($sql, $data = [])
 	{
 		try
 		{
@@ -57,8 +64,32 @@ class DB
 			$this->bindValues($data);
 			return $this->stmt->execute();
 		}
-		catch(\Exception $e) { $this->showError($e); }
+		catch(\Exception $e)
+		{
+			if($this->isTransaction && $this->config['AUTO_ROLLBACK']) { $this->rollback(); }
+			throw $e;
+		}
 	}
+
+	private function prepare($sql) { $this->stmt = $this->dbh->prepare($sql); }
+
+	private function bindValues($data)
+    {
+        foreach($data as $key => $value)
+        {
+            switch(gettype($value))
+            {
+				case 'integer': $type = \PDO::PARAM_INT; $value = (integer)$value; break;
+				case 'boolean': $type = \PDO::PARAM_BOOL; $value = (boolean)$value; break;
+				case 'NULL': $type = \PDO::PARAM_NULL; break;
+				default: $type = \PDO::PARAM_STR; $value = (string)$value; break;
+            }
+            $this->stmt->bindValue($key, $value, $type);
+        }
+    }
+
+	public function rowCount() { return $this->stmt->rowCount(); }
+    public function getLastInsertId(){ return $this->dbh->lastInsertId(); }
 	
 	public function insert($table, $data)
 	{
@@ -71,10 +102,58 @@ class DB
 
         return $this->query($sql, $data);
 	}
+
+	private static function addTextToEachElement($array)
+	{
+		return array_map(function($value){ return ':' . $value; }, $array);
+	}
+
+	public function update($table, $replacements, $where, $data = [])
+	{
+		$keys = [];
+		$values = [];
+		foreach($replacements as $key => $value)
+		{
+			array_push($keys, $key . ' = :' . $key);
+			$values[$key] = $value;
+		}
+		$_keys = implode(', ', $keys);
+
+		$data_new = [];
+		$unique = uniqid();
+
+		foreach($data as $key => $value) { $data_new[$key . '_' . $unique] = $value; }
+
+		$fn_add_two_points = function($value){ return ':' . $value; };
+
+		$where = str_replace(array_map($fn_add_two_points, array_keys($data)), array_map($fn_add_two_points, array_keys($data_new)), $where);
+	
+		$sql = 'UPDATE ' . $table . ' SET ' . $_keys . ' WHERE ' . $where;
+
+		return $this->query($sql, array_merge($data_new, $values));
+	}
+	
+	public function delete($table, $where, $data = [])
+	{
+		$sql = 'DELETE FROM ' . $table . ' WHERE ' . $where;
+		return $this->query($sql, $data);
+	}
+
+	public function select($table, $fields, $where = '', $data = [], $limit = [])
+	{
+		$this->_select($table, $fields, $where, $data, $limit);
+		return $this->fetchAll($this->config['FETCH_OBJECT'] ? \PDO::FETCH_OBJ : \PDO::FETCH_ASSOC);
+	}
+
+	public function selectOne($table, $fields, $where = '', $data = [], $limit = [])
+	{
+		$this->_select($table, $fields, $where, $data, $limit);
+		return $this->fetch($this->config['FETCH_OBJECT'] ? \PDO::FETCH_ASSOC : \PDO::FETCH_OBJ);
+	}
 	
 	private function _select($table, $fields, $where, $data, $limit)
 	{
-		$a_fields = array();
+		$a_fields = [];
 		if(is_array($fields))
 		{
 			foreach($fields as $key => $value)
@@ -90,45 +169,6 @@ class DB
 		$sql = 'SELECT ' . $fields . ' FROM ' . $table . $where . $limit;
 		$this->query($sql, $data);
 	}
-
-	public function select($table, $fields, $where = '', $data = array(), $limit = array())
-	{
-		$this->_select($table, $fields, $where, $data, $limit);
-		return $this->fetchObjectAll();
-	}
-
-	public function selectOne($table, $fields, $where = '', $data = array(), $limit = array())
-	{
-		$this->_select($table, $fields, $where, $data, $limit);
-		return $this->fetchObject();
-	}
-	
-	public function update($table, $replacements, $where, $data = array())
-	{
-		$keys = array();
-		$values = array();
-		foreach($replacements as $key => $value)
-		{
-			array_push($keys, $key . ' = :' . $key);
-			$values[$key] = $value;
-		}
-		$_keys = implode(', ', $keys);
-		$sql = 'UPDATE ' . $table . ' SET ' . $_keys . ' WHERE ' . $where;
-		return $this->query($sql, array_merge($data, $values));
-	}
-	
-	public function delete($table, $where, $data = array())
-	{
-		$sql = 'DELETE FROM ' . $table . ' WHERE ' . $where;
-		return $this->query($sql, $data);
-	}
-	
-	public function fetchArray() { return $this->fetch(\PDO::FETCH_ASSOC); }
-    public function fetchArrayAll() { return $this->fetchAll(\PDO::FETCH_ASSOC); }
-    public function fetchObject() { return $this->fetch(\PDO::FETCH_OBJ); }
-    public function fetchObjectAll() { return $this->fetchAll(\PDO::FETCH_OBJ); }
-    public function rowCount() { return $this->stmt->rowCount(); }
-    public function getLastInsertId(){ return $this->dbh->lastInsertId(); }
 	
 	/* Transacts */
 	public function beginTransaction()
@@ -147,48 +187,28 @@ class DB
 		$this->dbh->rollback();
 	}
 
-	/* Privates */
-	private function fetch($mode)
+	private function _setFetchMode()
 	{
-		try
-		{
-			$this->stmt->setFetchMode($mode);
-			return $this->stmt->fetch();
-		}
-		catch(\Exception $e) { $this->showError($e); }
+		if(isset($this->config['FETCH_OBJECT']) && $this->config['FETCH_OBJECT']) { $this->stmt->setFetchMode(\PDO::FETCH_OBJ); }
+		else { $this->stmt->setFetchMode(\PDO::FETCH_ASSOC); }
+	}
+
+	public function fetch()
+	{
+		$this->_setFetchMode();
+		return $this->stmt->fetch();
 	}
 	
-	private function fetchAll($mode)
+	public function fetchAll()
 	{
-		try
-		{
-			$this->stmt->setFetchMode($mode);
-			return $this->stmt->fetchAll();
-		}
-		catch(\Exception $e) { $this->showError($e); }
+		$this->_setFetchMode();
+		return $this->stmt->fetchAll();
 	}
-	
-	private function prepare($sql) { $this->stmt = $this->dbh->prepare($sql); }
-	private function bindValues($data)
-    {
-        foreach($data as $key => $value)
-        {
-            switch(gettype($value))
-            {
-				case 'integer': $type = \PDO::PARAM_INT; $value = (integer)$value; break;
-				case 'boolean': $type = \PDO::PARAM_BOOL; $value = (boolean)$value; break;
-				case 'NULL': $type = \PDO::PARAM_NULL; break;
-				default: $type = \PDO::PARAM_STR; $value = (string)$value; break;
-            }
-            $this->stmt->bindValue($key, $value, $type);
-        }
-    }
-	
-	private function showError(\Exception $e)
-	{
-		if($this->isTransaction && $this->config['AUTO_ROLLBACK']) { $this->isTransaction = false; $this->rollback(); }
-		$this->error->showMessage($e->getMessage(), Message::$default);
-	}
+
+	public function fetchArray() { $this->stmt->setFetchMode(\PDO::FETCH_ASSOC); return $this->stmt->fetch(); }
+    public function fetchArrayAll() { $this->stmt->setFetchMode(\PDO::FETCH_ASSOC); return $this->stmt->fetchAll(); }
+    public function fetchObject() { $this->stmt->setFetchMode(\PDO::FETCH_OBJ); return $this->stmt->fetch(); }
+    public function fetchObjectAll() { $this->stmt->setFetchMode(\PDO::FETCH_OBJ); return $this->stmt->fetchAll(); }
 	
 	public function __clone() { throw new \Exception('No se puede clonar la clase ' . __CLASS__); }
 }

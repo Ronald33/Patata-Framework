@@ -19,8 +19,7 @@ spl_autoload_register(function($class_name){
 
 // DAO
 spl_autoload_register(function($class_name){
-    $folder_dao = 'mysql';
-    $fullpath = PATH_MODEL . DIRECTORY_SEPARATOR . $folder_dao . DIRECTORY_SEPARATOR . $class_name . '.php';
+    $fullpath = PATH_MODEL . DIRECTORY_SEPARATOR . 'dao' . DIRECTORY_SEPARATOR . $class_name . '.php';
     if(file_exists($fullpath)) { require_once($fullpath); }
 });
 
@@ -32,3 +31,5 @@ spl_autoload_register(function($class_name){
         if(file_exists($fullpath)) { require_once($fullpath); }
     }
 });
+
+require_once(__DIR__ . DIRECTORY_SEPARATOR . 'for-custom' . DIRECTORY_SEPARATOR . 'autoload.php');

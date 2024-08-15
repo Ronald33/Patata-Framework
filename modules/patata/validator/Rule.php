@@ -1,105 +1,188 @@
 <?php
 namespace modules\patata\validator;
 
-abstract class Rule
+class Rule
 {
-	/*public static function isSomething($value)
-    {
-        if(true) { return true; }
-        else { return false; }
-    }*/
+    private $_messages;
 
-    public static function isEmail($value) { return filter_var($value, FILTER_VALIDATE_EMAIL); }
-    public static function isFloat($value, $decimal = '.')
+    public function __construct()
     {
+        $this->_messages = [
+            'default' 					=> 'No es válido', 
+            'hasContent' 				=> 'No puede estar vacío', 
+            'minLengthIs' 				=> 'No cumple con la cantidad mínima de caracteres', 
+            'maxLengthIs' 				=> 'Excede la cantidad de caracteres permitidos', 
+            'isWord' 					=> 'Solo esta permitido letras', 
+            'isWords' 					=> 'Solo esta permitido letras y espacios', 
+            'isAlphaNumeric'			=> 'Solo esta permitido cáracteres alfanuméricos', 
+            'isAlphaNumericAndSpaces'	=> 'Solo esta permitido cáracteres alfanuméricos y espacios', 
+            'isDNI'						=> 'Debe de ser un DNI', 
+            'isRUC'						=> 'Debe de ser un RUC', 
+            'isEmail' 					=> 'Debe de ser un email', 
+            'isUrl' 					=> 'Debe de ser una URL', 
+            'isInt' 					=> 'Debe de ser un entero', 
+            'isFloat' 					=> 'Debe de ser un número flotante válido', 
+            'isPositive' 				=> 'Debe de ser un valor mayor a cero', 
+            'isBetween' 				=> 'Esta fuera de rango', 
+            'hasElements'				=> 'No se le asigno elementos', 
+            'hasUniqueValues'			=> 'Tiene valores duplicados', 
+            'isDate' 					=> 'Debe de ser una fecha', 
+            'isDateTime'				=> 'Debe de ser una fecha y hora', 
+            'isTimestamp'				=> 'Debe de ser un timestamp válido', 
+            'isDate' 					=> 'Debe de ser una fecha', 
+            'isDifferentTo'				=> 'El valor ingresado no está permitido', 
+            'isIn' 						=> 'No se encuentra en las opciones disponibles', 
+            'isUnique' 					=> 'El valor ingresado ya se encuentra registrado'
+        ];
+    }
+
+    public function getMessages() { return $this->_messages; }
+
+    /* Strings */
+    public static function isInputText($value) { return is_string($value) || is_numeric($value); }
+    public static function isString($value) { return is_string($value); }
+    public static function hasContent($value)
+    {
+        if(!self::isInputText($value)) { return false; }
+        return strlen(trim((string) $value)) > 0;
+    }
+    public static function minLengthIs($value, $size)
+    {
+        if(!self::isInputText($value)) { return false; } 
+        return strlen((string) $value) >= $size;
+    }
+    public static function maxLengthIs($value, $size)
+    {
+        if(!self::isInputText($value)) { return false; }
+        return strlen((string) $value) <= $size;
+    }
+    public static function isWord($value)
+    {
+        if(!self::isInputText($value)) { return false; }
+        return self::isRegex((string) $value, '/^[a-zA-ZáéíóúÁÉÍÓÚñÑ]+$/');
+    }
+    public static function isWords($value)
+    {
+        if(!self::isInputText($value)) { return false; }
+        return self::isRegex((string) $value, '/^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$/');
+    }
+    public static function isAlphaNumeric($value)
+    {
+        if(!self::isInputText($value)) { return false; }
+        return self::isRegex((string) $value, '/^[a-zA-Z0-9áéíóúñÑ]+$/');
+    }
+    public static function isAlphaNumericAndSpaces($value)
+    {
+        if(!self::isInputText($value)) { return false; }
+        return self::isRegex((string) $value, '/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ ]+$/');
+    }
+    public static function isDNI($value)
+    {
+        if(!self::isInputText($value)) { return false; }
+        return self::isRegex((string) $value, '/^[0-9]{8}$/');
+    }
+    public static function isRUC($value)
+    {
+        if(!self::isInputText($value)) { return false; }
+        return self::isRegex((string) $value, '/^[0-9]{11}$/');
+    }
+    public static function isUbigeo($value)
+    {
+        if(!self::isInputText($value)) { return false; }
+        return self::isRegex((string) $value, '/^[0-9]{6}$/');
+    }
+    public static function isRegex($value, $regex)
+    {
+        if(!self::isInputText($value)) { return false; }
+        return preg_match($regex, $value);
+    }
+    public static function isEmail($value)
+    {
+        if(!self::isInputText($value)) { return false; }
+        return filter_var((string) $value, FILTER_VALIDATE_EMAIL);
+    }
+    public static function isUrl($value)
+    {
+        if(!self::isInputText($value)) { return false; }
+        return filter_var((string) $value, FILTER_VALIDATE_URL);
+    }
+    
+    /* Numbers */
+    public static function isInt($value) { return filter_var($value, FILTER_VALIDATE_INT); }
+    public static function isFloat($value)
+    {
+        $decimal = '.';
         $decimal = array('decimal' => $decimal);
         $options = array('options' => $decimal);
         return filter_var($value, FILTER_VALIDATE_FLOAT, $options);
     }
-    public static function isInt($value) { return filter_var($value, FILTER_VALIDATE_INT); }
-    public static function isBetween($value, $min, $max, $decimal = '.')
-    {
-        if(self::isFloat($min, $decimal) && self::isFloat($max, $decimal) && $value > $min && $value < $max) { return true; }
-        else { return false; }
-    }
-    public static function isUrl($value) { return filter_var($value, FILTER_VALIDATE_URL); }
-    public static function isFilled($value)
-    {
-        if(strlen(trim($value)) > 0) { return true; }
-        else { return false; }
-    }
-    public static function isObject($value)
-    {
-        if(is_object($value)) { return true; }
-        else { return false; }
-    }
     public static function isPositive($value)
     {
-        if(self::isFloat($value) && $value > 0 ) { return true; }
-        else { return false; }
+        if(!self::isFloat($value)) { return false; }
+        return $value >= 0;
     }
-    public static function isRegex($value, $regex) { return preg_match($regex, $value); }
-    public static function isWord($value) { return $x = self::isRegex($value, '/^[a-zA-ZáéíóúÁÉÍÓÚñÑ]+$/'); print_r($x); self::isRegex($value, '/^[a-zA-ZáéíóúÁÉÍÓÚñÑ]+$/'); }
-    public static function isWords($value)
+    public static function isBetween($value, $min, $max)
     {
-        if(self::isFilled($value)) { return self::isRegex($value, '/^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$/'); }
-        else { return false; }
+        if(!self::isFloat($value)) { return false; }
+        return $value >= $min && $value <= $max;
     }
-    public static function isAlphaNumeric($value) { return self::isRegex($value, '/^[a-zA-Z0-9áéíóúñÑ]+$/'); }
-    public static function isAlphaNumericAndSpaces($value)
+    
+    /* Arrays */
+    public static function isArray($value) { return is_array($value); }
+    public static function hasElements($value = array())
     {
-        if(self::isFilled($value)) { return self::isRegex($value, '/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ ]+$/'); }
-        else { return false; }
+        if(!self::isArray($value)) { return false; }
+        return sizeof($value) > 0;
     }
-    public static function lengthIsLessThan($value, $size) { return strlen($value) < $size; }
-    public static function lengthIsGreaterThan($value, $size) { return strlen($value) > $size; }
-    public static function isIn($value, $array) { return in_array($value, $array); }
-    public static function hasElements($array = array())
+    public static function hasUniqueValues($value)
     {
-        if(!is_array($array)) { return false; }
-        if(sizeof($array) == 0) { return false; }
-        else { return true; }
-    }
-    public static function hasUniqueValues($array = array())
-    {
-        if(is_array($array))
-        {
-            $aux = array();
-            foreach ($array as $val)
-            {
-                $index = crc32(serialize($val));
-                if(isset($aux[$index])) { return false; }
-                else { $aux[$index] = 1; }
-            }
-            return true;
-        }
-        else { return true; }
-    }
-    public static function isDNI($value) { return self::isRegex($value, '/^[0-9]{8}$/'); }
+        if(!self::isArray($value)) { return false; }
 
+        $aux = [];
+        foreach ($value as $element)
+        {
+            $serialized_element = crc32(serialize($element));
+            if(isset($aux[$serialized_element])) { return false; }
+            else { $aux[$serialized_element] = 1; }
+        }
+        return true;
+    }
+
+    /* Dates */
+    public static function isDate($value)
+    {
+        $format = 'Y-m-d';
+        $tmp = \DateTime::createFromFormat($format, $value);
+        return $tmp && $$tmp->format($format) == $value;
+    }
+
+    public static function isDateTime($value)
+    {
+        $format = 'Y-m-d H:i:s';
+        $tmp = \DateTime::createFromFormat($format, $value);
+        return $tmp && $$tmp->format($format) == $value;
+    }
+
+    public static function isTimestamp($value) { return self::isInt($value) && self::isPositive($value) && $value <= PHP_INT_MAX; }
+
+    /* General */
+    public static function isDifferentTo($value, $another_value) { return $value != $another_value; }
+    public static function isIn($value, $array)
+    {
+        if(!self::isArray($array)) { return false; }
+        return in_array($value, $array);
+    }
+
+    /* DB */
     public static function isUnique($value, $table, $column, $condition = '1')
     {
         $extras_dao = new \ExtrasDAO();
         return $extras_dao->isUnique($value, $table, $column, $condition);
     }
 
-    public static function fileWasUploaded($value)
+    public static function rowExists($table, $field, $value)
     {
-        if(isset($value['tmp_name']) && $value['error'] != 1) { return true; }
-        else { return false; }
-    }
-
-    public static function sizeIsLessThan($value, $maxSize)
-    {
-        if($value['size'] > $maxSize) { return false; }
-        else { return true; }
-    }
-
-    public static function typeIsInArray($value, $allowedTypes)
-    {
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mime = finfo_file($finfo, $value['tmp_name']);
-        if(in_array($mime, $allowedTypes)) { return true; }
-        else { return false; }
+        $extras_dao = new \ExtrasDAO();
+        return $extras_dao->rowExists($table, $field, $value);
     }
 }

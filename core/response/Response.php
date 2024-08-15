@@ -1,45 +1,64 @@
 <?php
-namespace Core\Response;
+namespace core\response;
 
 class Response
 {
+	private $_config;
 	private static $instance;
 
-	private function __construct() {  }
-
-	public static function getInstance()
+	private function __construct($extra_configuration_path)
 	{
-		if(self::$instance == NULL) { self::$instance = new Response(); }
+		$extra_config = $extra_configuration_path !== NULL ? parse_ini_file($extra_configuration_path) : [];
+		$this->_config = array_merge(parse_ini_file(__DIR__ . DIRECTORY_SEPARATOR . 'config.ini'), $extra_config);
+	}
+
+	public static function getInstance($extra_configuration_path = NULL)
+	{
+		if(self::$instance == NULL) { self::$instance = new Response($extra_configuration_path); }
 		return self::$instance;
 	}
 
-	// Ok
-	public function s200($message = '') { self::respondWithJSON($message, 200); }
-	// Nuevo elemento creado (usualmente usado despues de PUT)
-	public function s201($message = '') { self::respondWithJSON($message, 201); }
-	// Respuesta a un patch
-	public function s204() { self::respondWithJSON('', 204); }
-	// Solicitud erronea
-	public function s400($message = '') { self::respondWithJSON($message, 400); }
-	// No se tiene la autorizacion
-	public function s401($message = '') { self::respondWithJSON($message, 401); }
-	// No se tiene los suficientes privilegios
-	public function s403($message = '') { self::respondWithJSON($message, 403); }
-	// Recurso no encontrado
-	public function s404($message = '') { self::respondWithJSON($message, 404); }
-	// Conflicto en la peticion
-	public function s409($message = '') { self::respondWithJSON($message, 409); }
-	// Error en el servidor
-	public function s500($message = '') { self::respondWithJSON($message, 500); }
-	// Metodo no implementado
-	public function s501($message = '') { self::respondWithJSON($message, 501); }
-	
-	public static function respondWithJSON($message, $code)
+	public function respondWithText($code, $message = '')
 	{
 		http_response_code($code);
-		header('Content-Type: application/json; charset=UTF-8');
-		die(json_encode($message, JSON_NUMERIC_CHECK));
+		header('Content-Type: text/plain; charset=' . $this->_config['RESPONSE_CHARSET']);
+		die($message);
 	}
+
+	public function respondWithJSON($code, $message = '', $apply_numeric_check = false)
+	{
+		http_response_code($code);
+		header('Content-Type: application/json; charset=' . $this->_config['RESPONSE_CHARSET']);
+		$encoded = json_encode($message, $apply_numeric_check ? JSON_NUMERIC_CHECK : 0);
+		die($encoded);
+	}
+
+	// Ok
+	public function j200($message = '', $apply_numeric_check = false) { $this->respondWithJSON(200, $message, $apply_numeric_check); }
+
+	// Nuevo elemento creado
+	public function j201($message = '', $apply_numeric_check = false) { $this->respondWithJSON(201, $message, $apply_numeric_check); }
+
+	// La petición se cumplió satisfactoriamente, no hay contenido para devolver (usualmente usado despues de PUT)
+	public function j204() { $this->respondWithJSON(204); }
+	
+	// Solicitud erronea
+	public function j400($message = '', $apply_numeric_check = false) { $this->respondWithJSON(400, $message, $apply_numeric_check); }
+
+	// No se tiene la autorizacion
+	public function j401($message = '') { $this->respondWithJSON(401, $message); }
+
+	// Recurso no encontrado
+	public function j404($message = '') { $this->respondWithJSON(404, $message); }
+
+	// Recurso bloqueado
+	public function j423($message = '') { $this->respondWithJSON(423, $message); }
+
+	// Error en el servidor
+	public function j500($message = '') { self::respondWithJSON(500, $message); }
+
+	// Metodo no implementado
+	public function j501($message = '') { self::respondWithJSON(501, $message); }
 
 	public function __clone() { throw new \Exception('No se puede clonar la clase ' . __CLASS__); }
 }
