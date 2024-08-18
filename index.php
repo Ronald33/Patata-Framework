@@ -1,4 +1,6 @@
 <?php
+// echo '<pre>'; var_dump(gethostbyname('localhost'));
+// echo '<pre>'; print_r($_SERVER); die();
 require_once(__DIR__ . DIRECTORY_SEPARATOR . 'load-config.php');
 require_once(__DIR__ . DIRECTORY_SEPARATOR . 'configurator.php');
 require_once(__DIR__ . DIRECTORY_SEPARATOR . 'constants.php');

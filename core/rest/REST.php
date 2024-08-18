@@ -29,12 +29,12 @@ class REST
 		if(isset($this->_config['CLASS_EXCEPTIONS'])) { assert(is_string($this->_config['CLASS_EXCEPTIONS']), 'In REST, CLASS_EXCEPTIONS is invalid'); }
 		if(isset($this->_config['SKIP_AUTH'])) { assert(is_string($this->_config['SKIP_AUTH']), 'In REST, SKIP_AUTH is invalid'); }
 		assert(is_array($this->_config['SPECIAL_TOKENS']), 'In REST, SPECIAL_TOKENS must be an array');
-		assert(ctype_alnum($this->_config['METHODS']['GET']), 'In RESTURIDecoder, METHODS[GET] is invalid');
-		assert(ctype_alnum($this->_config['METHODS']['POST']), 'In RESTURIDecoder, METHODS[POST] is invalid');
-		assert(ctype_alnum($this->_config['METHODS']['PUT']), 'In RESTURIDecoder, METHODS[PUT] is invalid');
-		assert(ctype_alnum($this->_config['METHODS']['DELETE']), 'In RESTURIDecoder, METHODS[DELETE] is invalid');
-		assert(ctype_alnum($this->_config['METHODS']['OPTIONS']), 'In RESTURIDecoder, METHODS[OPTIONS] is invalid');
-		assert(ctype_alnum($this->_config['METHODS']['PATCH']), 'In RESTURIDecoder, METHODS[PATCH] is invalid');
+		assert(ctype_alnum($this->_config['METHODS']['GET']), 'In REST, METHODS[GET] is invalid');
+		assert(ctype_alnum($this->_config['METHODS']['POST']), 'In REST, METHODS[POST] is invalid');
+		assert(ctype_alnum($this->_config['METHODS']['PUT']), 'In REST, METHODS[PUT] is invalid');
+		assert(ctype_alnum($this->_config['METHODS']['DELETE']), 'In REST, METHODS[DELETE] is invalid');
+		assert(ctype_alnum($this->_config['METHODS']['OPTIONS']), 'In REST, METHODS[OPTIONS] is invalid');
+		assert(ctype_alnum($this->_config['METHODS']['PATCH']), 'In REST, METHODS[PATCH] is invalid');
 	}
 
 	public static function getInstance($extra_configuration_path = NULL)
@@ -65,8 +65,8 @@ class REST
 		{
 			if(isset($this->_config['SKIP_AUTH']))
 			{
-				$ips = Helper::getIps($this->_config['SKIP_AUTH']);
-				if(in_array($_SERVER['REMOTE_ADDR'], $ips)) { $this->_data = 'SKIP-AUTH'; }
+				$ips = Helper::getRanges($this->_config['SKIP_AUTH']);
+				if(Helper::ipIsInRange($_SERVER['REMOTE_ADDR'], $ips)) { $this->_data = 'SKIP-AUTH'; }
 				else { return false; }
 			}
 			else { return false; }
@@ -79,13 +79,8 @@ class REST
 	{
 		if(isset($this->_config['SPECIAL_TOKENS']) && isset($this->_config['SPECIAL_TOKENS'][$token]))
 		{
-			$alloweds = $this->_config['SPECIAL_TOKENS'][$token];
-			if($alloweds == '*') { return true; }
-			else
-			{
-				$ips = Helper::getIps($alloweds);
-				if(in_array($_SERVER['REMOTE_ADDR'], $ips)) { return true; }
-			}
+			$ips = Helper::getRanges($this->_config['SPECIAL_TOKENS'][$token]);
+			if(Helper::ipIsInRange($_SERVER['REMOTE_ADDR'], $ips)) { return true; }
 		}
 		else { return false; }
 	}
