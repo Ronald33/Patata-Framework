@@ -6,6 +6,4 @@ define('SHOW_ALL_ERRORS', $config['SHOW_ALL_ERRORS']);
 define('TIMEZONE', $config['TIMEZONE']);
 define('ENABLE_CUSTOM_ERRORS', $config['ENABLE_CUSTOM_ERRORS']);
 
-define('CUSTOM_CONFIG_PATH', __DIR__ . DIRECTORY_SEPARATOR . 'for-custom' . DIRECTORY_SEPARATOR . 'config.ini');
-
 require_once(__DIR__ . DIRECTORY_SEPARATOR . 'for-custom' . DIRECTORY_SEPARATOR . 'config.php');

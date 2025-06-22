@@ -1,5 +1,5 @@
 <?php
-namespace modules\patata\db;
+namespace patata\db;
 
 class DB
 {
@@ -24,10 +24,10 @@ class DB
 		[
 			\PDO::ATTR_PERSISTENT => true, 
 			\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, 
-			\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . $this->config['DB_CHARSET'], 
-			\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET time_zone = "' . $this->config['TIME_ZONE'] . '"'
+			\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET time_zone = "' . $this->config['TIME_ZONE'] . '"; SET NAMES ' . $this->config['DB_CHARSET']
 		];
 		$this->dbh = new \PDO($dsn, $environment['USER'], $environment['PASSWORD'], $options);
+
 	}
 
 	private function checkConfigAsserts()
@@ -41,13 +41,11 @@ class DB
 		assert(is_string($this->config['TIME_ZONE']), 'In DB, TIMEZONE is invalid');
 		assert(in_array($this->config['FETCH_OBJECT'], $booleans), 'In DB, FETCH_OBJECT must be a bool');
 
-		foreach($environments as $environment)
-		{
-			assert(is_string($this->config[$environment]['HOST']), 'In DB, HOST (' . $environment . ') is invalid');
-			assert(is_string($this->config[$environment]['USER']), 'In DB, HOST (' . $environment . ') is invalid');
-			assert(is_string($this->config[$environment]['PASSWORD']), 'In DB, PASSWORD (' . $environment . ') is invalid');
-			assert(is_string($this->config[$environment]['DB_NAME']), 'In DB, DB_NAME (' . $environment . ') is invalid');
-		}
+		$environment = $this->config['ENVIRONMENT'];
+		assert(is_string($this->config[$environment]['HOST']), 'In DB, HOST (' . $environment . ') is invalid');
+		assert(is_string($this->config[$environment]['USER']), 'In DB, HOST (' . $environment . ') is invalid');
+		assert(is_string($this->config[$environment]['PASSWORD']), 'In DB, PASSWORD (' . $environment . ') is invalid');
+		assert(is_string($this->config[$environment]['DB_NAME']), 'In DB, DB_NAME (' . $environment . ') is invalid');
 	}
 	
 	public static function getInstance($extra_configuration_path = NULL)
@@ -103,11 +101,6 @@ class DB
         return $this->query($sql, $data);
 	}
 
-	private static function addTextToEachElement($array)
-	{
-		return array_map(function($value){ return ':' . $value; }, $array);
-	}
-
 	public function update($table, $replacements, $where, $data = [])
 	{
 		$keys = [];
@@ -139,19 +132,19 @@ class DB
 		return $this->query($sql, $data);
 	}
 
-	public function select($table, $fields, $where = '', $data = [], $limit = [])
+	public function select($table, $fields, $where = '', $data = [], $extra = '')
 	{
-		$this->_select($table, $fields, $where, $data, $limit);
+		$this->_select($table, $fields, $where, $data, $extra);
 		return $this->fetchAll($this->config['FETCH_OBJECT'] ? \PDO::FETCH_OBJ : \PDO::FETCH_ASSOC);
 	}
 
-	public function selectOne($table, $fields, $where = '', $data = [], $limit = [])
+	public function selectOne($table, $fields, $where = '', $data = [], $extra = '')
 	{
-		$this->_select($table, $fields, $where, $data, $limit);
+		$this->_select($table, $fields, $where, $data, $extra);
 		return $this->fetch($this->config['FETCH_OBJECT'] ? \PDO::FETCH_ASSOC : \PDO::FETCH_OBJ);
 	}
 	
-	private function _select($table, $fields, $where, $data, $limit)
+	private function _select($table, $fields, $where, $data, $extra)
 	{
 		$a_fields = [];
 		if(is_array($fields))
@@ -165,9 +158,7 @@ class DB
 		}
 		
 		$where = empty($where) ? '' : ' WHERE ' . $where;
-		$limit = empty($limit) ? '' : ' LIMIT ' . implode(', ', $limit);
-		$sql = 'SELECT ' . $fields . ' FROM ' . $table . $where . $limit;
-		$this->query($sql, $data);
+		$sql = 'SELECT ' . $fields . ' FROM ' . $table . $where . ' ' . $extra;		$this->query($sql, $data);
 	}
 	
 	/* Transacts */
@@ -186,6 +177,8 @@ class DB
 		$this->isTransaction = false;
 		$this->dbh->rollback();
 	}
+
+	public function inTransaction() { return $this->dbh->inTransaction(); }
 
 	private function _setFetchMode()
 	{

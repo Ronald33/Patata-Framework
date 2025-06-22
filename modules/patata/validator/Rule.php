@@ -1,5 +1,7 @@
 <?php
-namespace modules\patata\validator;
+namespace patata\validator;
+
+use stdClass;
 
 class Rule
 {
@@ -12,10 +14,10 @@ class Rule
             'hasContent' 				=> 'No puede estar vacío', 
             'minLengthIs' 				=> 'No cumple con la cantidad mínima de caracteres', 
             'maxLengthIs' 				=> 'Excede la cantidad de caracteres permitidos', 
-            'isWord' 					=> 'Solo esta permitido letras', 
-            'isWords' 					=> 'Solo esta permitido letras y espacios', 
-            'isAlphaNumeric'			=> 'Solo esta permitido cáracteres alfanuméricos', 
-            'isAlphaNumericAndSpaces'	=> 'Solo esta permitido cáracteres alfanuméricos y espacios', 
+            'isWord' 					=> 'Solo está permitido letras', 
+            'isWords' 					=> 'Solo está permitido letras y espacios', 
+            'isAlphanumeric'			=> 'Solo está permitido cáracteres alfanuméricos', 
+            'isAlphanumericAndSpaces'	=> 'Solo está permitido cáracteres alfanuméricos y espacios', 
             'isDNI'						=> 'Debe de ser un DNI', 
             'isRUC'						=> 'Debe de ser un RUC', 
             'isEmail' 					=> 'Debe de ser un email', 
@@ -23,6 +25,7 @@ class Rule
             'isInt' 					=> 'Debe de ser un entero', 
             'isFloat' 					=> 'Debe de ser un número flotante válido', 
             'isPositive' 				=> 'Debe de ser un valor mayor a cero', 
+            'isPositiveOrZero'			=> 'Debe de ser un valor mayor o igual a cero', 
             'isBetween' 				=> 'Esta fuera de rango', 
             'hasElements'				=> 'No se le asigno elementos', 
             'hasUniqueValues'			=> 'Tiene valores duplicados', 
@@ -32,11 +35,19 @@ class Rule
             'isDate' 					=> 'Debe de ser una fecha', 
             'isDifferentTo'				=> 'El valor ingresado no está permitido', 
             'isIn' 						=> 'No se encuentra en las opciones disponibles', 
-            'isUnique' 					=> 'El valor ingresado ya se encuentra registrado'
+            'isUnique' 					=> 'El valor ingresado ya se encuentra registrado', 
+            'isStdClass'                => 'Debe de ser un objeto', 
+            'isNotNull'                 => 'No es válido'
         ];
     }
 
     public function getMessages() { return $this->_messages; }
+
+    /* Object */
+    public static function isBoolean($value) { return in_array($value, [true, false, 'true', 'false'], true); }
+
+    /* Object */
+    public static function isStdClass($value) { return $value instanceof stdClass; }
 
     /* Strings */
     public static function isInputText($value) { return is_string($value) || is_numeric($value); }
@@ -66,12 +77,12 @@ class Rule
         if(!self::isInputText($value)) { return false; }
         return self::isRegex((string) $value, '/^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$/');
     }
-    public static function isAlphaNumeric($value)
+    public static function isAlphanumeric($value)
     {
         if(!self::isInputText($value)) { return false; }
         return self::isRegex((string) $value, '/^[a-zA-Z0-9áéíóúñÑ]+$/');
     }
-    public static function isAlphaNumericAndSpaces($value)
+    public static function isAlphanumericAndSpaces($value)
     {
         if(!self::isInputText($value)) { return false; }
         return self::isRegex((string) $value, '/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ ]+$/');
@@ -112,15 +123,21 @@ class Rule
     public static function isFloat($value)
     {
         $decimal = '.';
-        $decimal = array('decimal' => $decimal);
-        $options = array('options' => $decimal);
-        return filter_var($value, FILTER_VALIDATE_FLOAT, $options);
+        $decimal = ['decimal' => $decimal];
+        $options = ['options' => $decimal];
+        return filter_var($value, FILTER_VALIDATE_FLOAT, $options) !== false;
     }
     public static function isPositive($value)
     {
         if(!self::isFloat($value)) { return false; }
+        return $value > 0;
+    }
+    public static function isPositiveOrZero($value)
+    {
+        if(!self::isFloat($value)) { return false; }
         return $value >= 0;
     }
+
     public static function isBetween($value, $min, $max)
     {
         if(!self::isFloat($value)) { return false; }
@@ -129,7 +146,7 @@ class Rule
     
     /* Arrays */
     public static function isArray($value) { return is_array($value); }
-    public static function hasElements($value = array())
+    public static function hasElements($value = [])
     {
         if(!self::isArray($value)) { return false; }
         return sizeof($value) > 0;
@@ -172,17 +189,5 @@ class Rule
         if(!self::isArray($array)) { return false; }
         return in_array($value, $array);
     }
-
-    /* DB */
-    public static function isUnique($value, $table, $column, $condition = '1')
-    {
-        $extras_dao = new \ExtrasDAO();
-        return $extras_dao->isUnique($value, $table, $column, $condition);
-    }
-
-    public static function rowExists($table, $field, $value)
-    {
-        $extras_dao = new \ExtrasDAO();
-        return $extras_dao->rowExists($table, $field, $value);
-    }
+    public static function isNotNull($value) { return $value !== NULL; }
 }

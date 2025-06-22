@@ -36,31 +36,10 @@ abstract class PatataRepository
         return $rest;
     }
 
-    public static function getRESTMiddleware($uriDecoder, $extra_configuration_path = CUSTOM_CONFIG_PATH)
-    {
-        require_once(PATH_CORE . '/rest/RESTMiddleware.php');
-        $restMiddleware = new core\rest\RESTMiddleware(PatataRepository::getREST($extra_configuration_path));
-        $restMiddleware->setURIDecoder($uriDecoder);
-        return $restMiddleware;
-    }
-
     public static function getCaller($path = PATH_CONTROLLER, $extra_configuration_path = CUSTOM_CONFIG_PATH)
     {
         require_once(PATH_CORE . '/caller/Caller.php');
         return core\caller\Caller::getInstance($path, $extra_configuration_path);
-    }
-
-    public static function getRender($includeHeaderAndFooter = true, $extra_configuration_path = CUSTOM_CONFIG_PATH)
-    {
-        require_once(PATH_MODULES . '/patata/render/Render.php');
-
-        if($includeHeaderAndFooter)
-        {
-            return new modules\patata\render\Render($extra_configuration_path, PATH_HTML . DIRECTORY_SEPARATOR . 'header.phtml', PATH_HTML . DIRECTORY_SEPARATOR . 'footer.phtml');
-        }
-        else { return new modules\patata\render\Render($extra_configuration_path); }
-        
-        return $render;
     }
 
     public static function getResponse($extra_configuration_path = CUSTOM_CONFIG_PATH)
@@ -71,15 +50,15 @@ abstract class PatataRepository
 
     public static function getDB($extra_configuration_path = CUSTOM_CONFIG_PATH)
     {
-        require_once('modules/patata/db/DB.php');
-        $db = modules\patata\db\DB::getInstance($extra_configuration_path);
+        require_once(PATH_MODULES_PATATA . DIRECTORY_SEPARATOR . 'db' . DIRECTORY_SEPARATOR . 'DB.php');
+        $db = patata\db\DB::getInstance($extra_configuration_path);
         return $db;
     }
 
     public static function getValidator()
     {
-        require_once('modules/patata/validator/Validator.php');
-        $validator = new modules\patata\validator\Validator();
+        require_once(PATH_MODULES_PATATA . DIRECTORY_SEPARATOR . 'validator' . DIRECTORY_SEPARATOR . 'Validator.php');
+        $validator = new patata\validator\Validator();
         $validator->addSource(__DIR__ . '/for-custom/MyRule.php', 'MyRule');
         return $validator;
     }

@@ -13,12 +13,14 @@ class PageController
 	public function index()
 	{
 		$message = $this->model->getMessage();
-		$data = array('message' => $message);
+		$data = ['message' => $message];
 		$this->view->index($data);
 	}
 
 	public function s404()
 	{
-		$this->view->s404();
+		$data = ['TITLE' => 'Página no encontrada'];
+		http_response_code(404);
+		$this->view->s404($data);
 	}
 }

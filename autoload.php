@@ -5,12 +5,6 @@ spl_autoload_register(function($class_name){
     if(file_exists($fullpath)) { require_once($fullpath); }
 });
 
-// Validator
-spl_autoload_register(function($class_name){
-    $fullpath = PATH_VALIDATOR . DIRECTORY_SEPARATOR . $class_name . '.php';
-    if(file_exists($fullpath)) { require_once($fullpath); }
-});
-
 // Helper
 spl_autoload_register(function($class_name){
     $fullpath = PATH_HELPER . DIRECTORY_SEPARATOR . $class_name . '.php';

@@ -17,13 +17,13 @@ abstract class PatataHelper
     {
         assert(http_response_code() != FALSE, 'CLI no supported');
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-        return $protocol . '://' . $_SERVER['SERVER_NAME'] . ':' . $_SERVER['SERVER_PORT'] . self::getFolder();
+        return $protocol . $_SERVER['SERVER_NAME'] . ':' . $_SERVER['SERVER_PORT'] . self::getFolder();
     }
 
     public static function getAllowedMethodsFromClass($class)
 	{
-        $rest = Repository::getREST();
-        $methods = $rest->getMethods();
+        $uriDecoder = Repository::getURIDecoder();
+        $methods = $uriDecoder->getMethods();
 		$allowed = [];
         if(is_array($methods))
         {
@@ -33,6 +33,13 @@ abstract class PatataHelper
             }
         }
 		return implode(', ', $allowed);
+	}
+
+	public static function getCustomConfig() { return parse_ini_file(CUSTOM_CONFIG_PATH, true); }
+
+	public static function stringIsPositiveNumber($string)
+	{
+		return filter_var($string, FILTER_VALIDATE_FLOAT) !== false && $string > 0;
 	}
 
     private static function setProperty($destinationReflection, $name, &$destination, $value)
@@ -84,40 +91,105 @@ abstract class PatataHelper
         return json_decode(file_get_contents('php://input'));
     }
 
-	public static function getTokenFromObject($object)
+	// public static function getTokenFromObject($object)
+	// {
+	// 	$data = ['serialized' => serialize($object)];
+	// 	return Repository::getREST()->getToken()->encode($data);
+	// }
+
+	public static function getResponseLoginSuccessful($object, $apply_numeric_check = false)
 	{
-		$data = ['serialized' => serialize($object)];
-		return Repository::getREST()->getToken()->encode($data);
+		$transformed = json_encode($object, $apply_numeric_check ? JSON_NUMERIC_CHECK : 0);
+		return ['user' => $object, 'token' => Repository::getREST()->getToken()->encode(['serialized' => $transformed])];
 	}
 
 	public static function getObjectFromToken($token)
 	{
-		return unserialize(Repository::getREST()->getToken()->decode($token)['serialized']);
+		return json_decode(Repository::getREST()->getToken()->decode($token)['serialized']);
 	}
 
 	public static function getCurrentUser()
 	{
 		$token = Repository::getREST()->getTokenFromRequest();
-		return self::getObjectFromToken($token);
+		return self::castObjectToUser(self::getObjectFromToken($token));
+	}
+
+	private static function castObjectToUser($object)
+	{
+		$usuario = Helper::cast($object->__class, $object);
+
+		$persona = Helper::cast($object->persona->__class, $object->persona);
+		$usuario->setPersona($persona);
+
+		if(isset($object->terminal))
+		{
+			$terminal = Helper::cast($object->terminal->__class, $object->terminal);
+			$usuario->setTerminal($terminal);
+		}
+
+		return $usuario;
 	}
 
 	public static function getCurrentTimestamp($timezone = TIMEZONE)
 	{
 		$now = new DateTime('', new DateTimeZone($timezone));
-		return $now->getTimestamp() * 1000;
+		return $now->getTimestamp();
+	}
+
+	public static function getDateFormattedFromTimestamp($timestamp, $format, $timezone = TIMEZONE)
+	{
+		$date = new DateTime('', new DateTimeZone($timezone));
+		$date->setTimestamp($timestamp);
+		return $date->format($format);
 	}
 
 	public static function getDateFromTimestamp($timestamp, $timezone = TIMEZONE)
 	{
-		$date = new DateTime('', new DateTimeZone($timezone));
-		$date->setTimestamp($timestamp);
-		return $date->format('Y-m-d');
+		return self::getDateFormattedFromTimestamp($timestamp, 'Y-m-d', $timezone);
 	}
 
 	public static function getDateTimeFromTimestamp($timestamp, $timezone = TIMEZONE)
 	{
-		$date = new DateTime('', new DateTimeZone($timezone));
-		$date->setTimestamp($timestamp);
-		return $date->format('Y-m-d H:i:s');
+		return self::getDateFormattedFromTimestamp($timestamp, 'Y-m-d H:i:s', $timezone);
+	}
+
+	private static function getDataForRender($data, $clear_missing_values, $add_extra_data)
+	{
+		assert(is_array($data));
+
+		$extra = 
+		[
+			'TITLE' => 'Patata FW', 
+			'DESCRIPTION' => 'Patata Framework', 
+			'URL_BASE' => URL_BASE
+		];
+
+		if($add_extra_data) { $data = array_merge($extra, $data); }
+
+		$results = 
+		[
+			'search' => [], 
+			'replace' => []
+		];
+
+		foreach($data as $key => $value)
+		{
+			array_push($results['search'], '/{{' . $key . '}}/');
+			array_push($results['replace'], $value);
+		}
+
+		if($clear_missing_values)
+		{
+			array_push($results['search'], '/{{.+}}/');
+			array_push($results['replace'], '');
+		}
+
+		return $results;
+	}
+
+	public static function getTemplateRendered($template, $data, $clear_missing_values = true, $add_extra_data = true)
+	{
+		$data = self::getDataForRender($data, $clear_missing_values, $add_extra_data);
+		return preg_replace($data['search'], $data['replace'], $template);
 	}
 }

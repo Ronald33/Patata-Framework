@@ -1,5 +1,5 @@
 <?php
-require_once(PATH_CORE . '/middleware/Middleware.php');
+require_once(PATH_CORE . DIRECTORY_SEPARATOR . 'middleware'. DIRECTORY_SEPARATOR . 'Middleware.php');
 require_once(PATH_BASE . DIRECTORY_SEPARATOR . 'PatataHelper.php');
 
 use core\middleware\Middleware;
@@ -12,42 +12,40 @@ class MyMiddleware extends Middleware
     {
         assert($this->getURIDecoder() != NULL, 'The URI decoder is not set');
 
-        if(ENABLE_REST) { return $this->evaluationForREST(); }
+        if(ENABLE_REST)
+        {
+            if(Repository::getREST()->dataIsDecodable()) { return $this->evaluateWithToken(); }
+            else { return $this->evaluationBySpecialCases(); }
+        }
         else { return $this->evaluationForClassical(); }
     }
 
-    private function evaluationForREST()
+    private function evaluateWithToken()
+    {
+        $user = PatataHelper::getCurrentUser();
+        $class = $this->getURIDecoder()->getClass();
+        $method = $this->getURIDecoder()->getMethod();
+        $arguments = $this->getURIDecoder()->getArguments();
+        $payload = PatataHelper::getPayload();
+
+        return false;
+    }
+
+    private function evaluationBySpecialCases()
     {
         $class = $this->getURIDecoder()->getClass();
+        $method = $this->getURIDecoder()->getMethod();
+        $arguments = $this->getURIDecoder()->getArguments();
+        $data = Repository::getREST()->getData();
 
-        if(Repository::getREST()->dataIsDecodable())
+        if($data == 'CLASS-EXCEPTIONS') { return true; }
+
+        if($data == 'SKIP-AUTH')
         {
-            $method = $this->getURIDecoder()->getMethod();
-            $arguments = $this->getURIDecoder()->getArguments();
-            $payload = PatataHelper::getPayload();
-            $user = PatataHelper::getCurrentUser();
-            $tipo = $user->tipo;
-
-            if($tipo == 'ADMINISTRADOR')
-            {
-
-            }
-            else if($tipo == 'VENDEDOR')
-            {
-                if($class == 'Usuario')
-                {
-                    if(in_array($method, ['post', 'delete', 'patch'])) { return false; }
-                    if($method == 'put')
-                    {
-                        if($user->id != $arguments[0]) { return false; } // Si intenta editar otro usuario
-                        if($user->persona->id != $payload->persona->id) { return false; } // Si intenta modifica la persona asociada
-                        if($payload->tipo == 'ADMINISTRADOR') { return false; } // Si se pone el rol de administrador
-                    }
-                }
-            }
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     private function evaluationForClassical()

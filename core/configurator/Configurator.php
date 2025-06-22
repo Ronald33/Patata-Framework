@@ -4,9 +4,9 @@ class Configurator
 {
     private $_inDevelopment;
 
-    public function __construct($inProduction)
+    public function __construct($in_production)
     {
-        $this->_inDevelopment = $inProduction ? 0 : 1;
+        $this->_inDevelopment = $in_production ? 0 : 1;
     }
 
     public function enableAssertions()
@@ -63,17 +63,17 @@ class Configurator
         return $error;
     }
 
-    public function showError($errno, $errstr, $errfile, $errline, $errcontext)
+    public function showError($errno, $errstr, $errfile, $errline)
     {
-        if (!(error_reporting() & $errno)) { return false; }
+        if(!(error_reporting() & $errno)) { return false; }
 
-        $result = array();
+        $result = [];
         $result[] = sprintf('Error: [%d] %s', $errno, $errstr);
         $trace = debug_backtrace();
         $result[] = sprintf(' at %s:%s', $errfile, $errline);
 
         foreach ($trace as $index => $frame) {
-            if ($index == 0) {
+            if($index == 0) {
                 continue; // Saltar el primer frame ya que es esta misma función
             }
 
@@ -116,19 +116,19 @@ class Configurator
     private function jTraceEx($e, $seen = null)
     {
         $starter = $seen ? 'Caused by: ' : '';
-        $result = array();
-        if (!$seen) $seen = array();
+        $result = [];
+        if(!$seen) $seen = [];
         $trace  = $e->getTrace();
         $prev   = $e->getPrevious();
         $result[] = sprintf('%s%s: %s', $starter, get_class($e), $e->getMessage());
         $file = $e->getFile();
         $line = $e->getLine();
         while (true) {
-            $current = "$file:$line";
-            if (is_array($seen) && in_array($current, $seen)) {
-                $result[] = sprintf(' ... %d more', count($trace)+1);
-                break;
-            }
+            // $current = "$file:$line";
+            // if(is_array($seen) && in_array($current, $seen)) {
+            //     $result[] = sprintf(' ... %d more', count($trace)+1);
+            //     break;
+            // }
             $result[] = sprintf(' at %s%s%s(%s%s%s)',
                                         count($trace) && array_key_exists('class', $trace[0]) ? str_replace('\\', '.', $trace[0]['class']) : '',
                                         count($trace) && array_key_exists('class', $trace[0]) && array_key_exists('function', $trace[0]) ? '.' : '',
@@ -136,16 +136,16 @@ class Configurator
                                         $line === null ? $file : basename($file),
                                         $line === null ? '' : ':',
                                         $line === null ? '' : $line);
-            if (is_array($seen))
+            if(is_array($seen))
                 $seen[] = "$file:$line";
-            if (!count($trace))
+            if(!count($trace))
                 break;
             $file = array_key_exists('file', $trace[0]) ? $trace[0]['file'] : 'Unknown Source';
             $line = array_key_exists('file', $trace[0]) && array_key_exists('line', $trace[0]) && $trace[0]['line'] ? $trace[0]['line'] : null;
             array_shift($trace);
         }
         $result = join("\n", $result);
-        if ($prev)
+        if($prev)
             $result  .= "\n" . self::jTraceEx($prev, $seen);
 
         return $result;

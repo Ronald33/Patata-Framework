@@ -1,5 +1,5 @@
 <?php
-namespace modules\patata\validator;
+namespace patata\validator;
 
 class Input
 {
@@ -10,7 +10,7 @@ class Input
 	private $value;
 	private $optional;
 	private $valid = true;
-	private $messages = array();
+	private $messages = [];
 	
 	public function __construct($paths, $classes, $name, $value, $optional = false)
 	{

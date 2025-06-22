@@ -27,7 +27,6 @@ class ClassicalURIDecoder extends URIDecoder
 
 	private function checkConfigAsserts()
 	{
-		assert(ctype_alnum($this->_config['URI_SEPARATOR']), 'In Classical URIDecoder, URI_SEPARATOR is invalid');
 		assert(ctype_alnum($this->_config['DEFAULT_CLASS']), 'In Classical URIDecoder, DEFAULT_CLASS is invalid');
 		assert(ctype_alnum($this->_config['DEFAULT_METHOD']), 'In Classical URIDecoder, DEFAULT_METHOD is invalid');
 	}
@@ -40,7 +39,7 @@ class ClassicalURIDecoder extends URIDecoder
 
 	public function execute()
 	{
-		$parts = parent::getRequestParts($this->_config['URI_SEPARATOR']);
+		$parts = parent::getRequestParts();
 
 		if(sizeof($parts) > 0)
 		{

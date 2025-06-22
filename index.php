@@ -1,15 +1,16 @@
 <?php
-// echo '<pre>'; var_dump(gethostbyname('localhost'));
-// echo '<pre>'; print_r($_SERVER); die();
 require_once(__DIR__ . DIRECTORY_SEPARATOR . 'load-config.php');
 require_once(__DIR__ . DIRECTORY_SEPARATOR . 'configurator.php');
 require_once(__DIR__ . DIRECTORY_SEPARATOR . 'constants.php');
 require_once(__DIR__ . DIRECTORY_SEPARATOR . 'for-custom' . DIRECTORY_SEPARATOR . 'Repository.php');
 require_once(__DIR__ . DIRECTORY_SEPARATOR . 'autoload.php');
 
+$composer_autoload = __DIR__ . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+if(file_exists($composer_autoload)) { require_once($composer_autoload); }
+
 $uriDecoder = Repository::getURIDecoder();
+if(ENABLE_REST) { Repository::getREST()->auth($uriDecoder->getClass()); }
 $middlewareExecutor = Repository::getMiddlewareExecutor();
-if(ENABLE_REST) { $middlewareExecutor->add(Repository::getRESTMiddleware($uriDecoder)); }
 $middlewareExecutor->add(Repository::getMyMiddleware());
 if($middlewareExecutor->execute() === false) { Repository::getResponse()->j401(); }
 Repository::getCaller()->execute($uriDecoder->getClass(), $uriDecoder->getMethod(), $uriDecoder->getArguments());

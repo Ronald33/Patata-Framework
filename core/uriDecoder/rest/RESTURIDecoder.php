@@ -30,7 +30,6 @@ class RESTURIDecoder extends URIDecoder
 
 	private function checkConfigAsserts()
 	{
-		assert(is_string($this->_config['URI_SEPARATOR']), 'In RESTURIDecoder, URI_SEPARATOR is invalid');
 		assert(ctype_alnum($this->_config['DEFAULT_CLASS']), 'In RESTURIDecoder, DEFAULT_CLASS is invalid');
 		assert(ctype_alnum($this->_config['DEFAULT_METHOD']), 'In RESTURIDecoder, DEFAULT_METHOD is invalid');
 		if(isset($this->_config['EXCEPTIONS'])) { assert(is_string($this->_config['EXCEPTIONS']), 'In RESTURIDecoder, EXCEPTIONS is invalid'); }
@@ -53,7 +52,7 @@ class RESTURIDecoder extends URIDecoder
 
 	public function execute()
 	{
-		$parts = parent::getRequestParts($this->_config['URI_SEPARATOR']);
+		$parts = parent::getRequestParts();
 
 		$this->_class = sizeof($parts) > 0 ? array_shift($parts) : $this->_config['DEFAULT_CLASS'];
 
@@ -72,6 +71,8 @@ class RESTURIDecoder extends URIDecoder
 
 		$this->_arguments = $parts;
 	}
+
+	public function getMethods() { return $this->_config['METHODS']; }
 
 	public function __clone() { throw new \Exception('No se puede clonar la clase ' . __CLASS__); }
 }

@@ -25,8 +25,9 @@ abstract class URIDecoder
 		Example: http://localhost/my_project/a/b/c/d/e
 		Return: [a, b, c, d, e]
 	*/
-	protected function getRequestParts($uri_separator)
+	protected function getRequestParts()
 	{
+		$uri_separator = '/';
 		// Limpiamos los parametros enviados via GET
 		$pos_qm = strpos($_SERVER['REQUEST_URI'], '?');
 		$request_uri = $pos_qm ? substr($_SERVER['REQUEST_URI'], 0, $pos_qm) : $_SERVER['REQUEST_URI'];

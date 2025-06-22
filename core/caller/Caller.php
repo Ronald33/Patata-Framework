@@ -1,5 +1,5 @@
 <?php
-namespace Core\Caller;
+namespace core\caller;
 require_once(__DIR__ . '/Message.php');
 
 class Caller
@@ -9,9 +9,9 @@ class Caller
 
 	private static $instance;
 	
-	private function __construct($pathControllers, $extra_configuration_path)
+	private function __construct($path_controllers, $extra_configuration_path)
 	{
-		$this->_pathControllers = $pathControllers;
+		$this->_pathControllers = $path_controllers;
 
 		$extra_config = $extra_configuration_path !== NULL ? parse_ini_file($extra_configuration_path) : [];
 		$this->_config = array_merge(parse_ini_file(__DIR__ . DIRECTORY_SEPARATOR . 'config.ini'), $extra_config);
@@ -26,9 +26,9 @@ class Caller
 		assert(ctype_alnum($this->_config['S404_METHOD']), 'In Caller, S404_METHOD is invalid');
 	}
 
-	public static function getInstance($pathControllers, $extra_configuration_path = NULL)
+	public static function getInstance($path_controllers, $extra_configuration_path = NULL)
 	{
-		if(self::$instance == NULL) { self::$instance = new Caller($pathControllers, $extra_configuration_path); }
+		if(self::$instance == NULL) { self::$instance = new Caller($path_controllers, $extra_configuration_path); }
 		return self::$instance;
 	}
 	
@@ -62,7 +62,7 @@ class Caller
 				if($reflectionClass->IsInstantiable())
 				{
 					$instance = new $controller;
-					$data = array($instance, $method);
+					$data = [$instance, $method];
 					if(is_callable($data)) { return call_user_func_array($data, $arguments); }
 					else { return Message::noCallable($method); }
 				}

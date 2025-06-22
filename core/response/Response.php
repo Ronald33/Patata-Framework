@@ -1,6 +1,8 @@
 <?php
 namespace core\response;
 
+use PatataHelper;
+
 class Response
 {
 	private $_config;
@@ -29,8 +31,7 @@ class Response
 	{
 		http_response_code($code);
 		header('Content-Type: application/json; charset=' . $this->_config['RESPONSE_CHARSET']);
-		$encoded = json_encode($message, $apply_numeric_check ? JSON_NUMERIC_CHECK : 0);
-		die($encoded);
+		die(json_encode($message, ($apply_numeric_check ? JSON_NUMERIC_CHECK : 0) | JSON_UNESCAPED_UNICODE));
 	}
 
 	// Ok
@@ -48,8 +49,14 @@ class Response
 	// No se tiene la autorizacion
 	public function j401($message = '') { $this->respondWithJSON(401, $message); }
 
+	// Acceso denegado
+	public function j403($message = '') { $this->respondWithJSON(403, $message); }
+
 	// Recurso no encontrado
 	public function j404($message = '') { $this->respondWithJSON(404, $message); }
+
+	// Conflicto
+	public function j409($message = '') { $this->respondWithJSON(409, $message); }
 
 	// Recurso bloqueado
 	public function j423($message = '') { $this->respondWithJSON(423, $message); }

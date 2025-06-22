@@ -1,5 +1,5 @@
 <?php
-namespace modules\patata\validator;
+namespace patata\validator;
 
 require_once(__DIR__ . '/Input.php');
 
@@ -12,7 +12,7 @@ class Validator
 
 	public function __construct()
 	{
-		$this->addSource(__DIR__ . DIRECTORY_SEPARATOR . 'Rule.php', 'modules\patata\validator\Rule');
+		$this->addSource(__DIR__ . DIRECTORY_SEPARATOR . 'Rule.php', 'patata\validator\Rule');
 	}
 
 	public function addSource($path, $name_class)

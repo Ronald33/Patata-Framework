@@ -3,17 +3,13 @@ class PageView
 {
     public function index($data = [])
 	{
-		$render = Repository::getRender();
-		$render->setFileToTemplate(PATH_HTML . '/page/index.html');
-		$render->addStyle(PATH_CSS . '/page/styles.css');
-		$render->addScript(PATH_JS . '/page/scripts.js');
-		echo $render->get($data);
+		$template = file_get_contents(PATH_HTML . '/page/index.html');
+		echo Helper::getTemplateRendered($template, $data);
 	}
 
     public function s404($data = [])
 	{
-		$render = Repository::getRender(false);
-		$render->setFileToTemplate(PATH_HTML . '/page/404.html');
-		echo $render->get($data);
+		$template = file_get_contents(PATH_HTML . '/page/404.html');
+		echo Helper::getTemplateRendered($template, $data);
 	}
 }

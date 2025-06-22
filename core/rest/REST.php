@@ -26,15 +26,10 @@ class REST
 
 	private function checkConfigAsserts()
 	{
+		if(isset($this->_config['NAME_TOKEN_AUTH'])) { assert(is_string($this->_config['NAME_TOKEN_AUTH']), 'In REST, NAME_TOKEN_AUTH is invalid'); }
 		if(isset($this->_config['CLASS_EXCEPTIONS'])) { assert(is_string($this->_config['CLASS_EXCEPTIONS']), 'In REST, CLASS_EXCEPTIONS is invalid'); }
 		if(isset($this->_config['SKIP_AUTH'])) { assert(is_string($this->_config['SKIP_AUTH']), 'In REST, SKIP_AUTH is invalid'); }
 		assert(is_array($this->_config['SPECIAL_TOKENS']), 'In REST, SPECIAL_TOKENS must be an array');
-		assert(ctype_alnum($this->_config['METHODS']['GET']), 'In REST, METHODS[GET] is invalid');
-		assert(ctype_alnum($this->_config['METHODS']['POST']), 'In REST, METHODS[POST] is invalid');
-		assert(ctype_alnum($this->_config['METHODS']['PUT']), 'In REST, METHODS[PUT] is invalid');
-		assert(ctype_alnum($this->_config['METHODS']['DELETE']), 'In REST, METHODS[DELETE] is invalid');
-		assert(ctype_alnum($this->_config['METHODS']['OPTIONS']), 'In REST, METHODS[OPTIONS] is invalid');
-		assert(ctype_alnum($this->_config['METHODS']['PATCH']), 'In REST, METHODS[PATCH] is invalid');
 	}
 
 	public static function getInstance($extra_configuration_path = NULL)
@@ -48,7 +43,11 @@ class REST
 	public function auth($class)
 	{
 		if($_SERVER['REQUEST_METHOD'] == 'OPTIONS') { return true; }
-		if(isset($this->_config['CLASS_EXCEPTIONS']) && in_array($class, Helper::getArrayFromString($this->_config['CLASS_EXCEPTIONS']))) { return true; }
+		if(isset($this->_config['CLASS_EXCEPTIONS']) && in_array($class, Helper::getArrayFromString($this->_config['CLASS_EXCEPTIONS'])))
+		{
+			$this->_data = 'CLASS-EXCEPTIONS';
+			return true;
+		}
 
 		$token = $this->getTokenFromRequest();
 
@@ -86,16 +85,22 @@ class REST
 	}
 
 	public function getData() { return $this->_data; }
+
 	public function getTokenFromRequest()
 	{
-		$token = NULL;
-		$headers = apache_request_headers();
-		if(isset($headers['authorization'])) { $token = $headers['authorization']; }
-		else if(isset($headers['Authorization']))  { $token = $headers['Authorization']; }
-		return $token;
+		$auth_token_header_name = str_replace('-', '_', $this->_config['AUTH_TOKEN_HEADER_NAME']);
+
+		foreach($_SERVER as $name => $value)
+		{
+			if(str_starts_with($name, 'HTTP_'))
+			{
+				if(strtolower(substr($name, 5)) === strtolower($auth_token_header_name)) { return $value; }
+			}
+		}
+
+		return NULL;
 	}
 
-	public function getMethods() { return $this->_config['METHODS']; }
 	public function getToken() { return $this->_token; }
 	public function dataIsDecodable() { return $this->_dataIsDecodable; }
 
