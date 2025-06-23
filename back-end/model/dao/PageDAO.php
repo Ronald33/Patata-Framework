@@ -3,6 +3,6 @@ class PageDAO
 {
     public function select()
     {
-        return ['message' => 'Bienvenido patatero 2'];
+        return ['message' => 'Bienvenido patatero'];
     }
 }
