@@ -91,43 +91,9 @@ abstract class PatataHelper
         return json_decode(file_get_contents('php://input'));
     }
 
-	// public static function getTokenFromObject($object)
-	// {
-	// 	$data = ['serialized' => serialize($object)];
-	// 	return Repository::getREST()->getToken()->encode($data);
-	// }
-
-	public static function getResponseLoginSuccessful($object, $apply_numeric_check = false)
-	{
-		$transformed = json_encode($object, $apply_numeric_check ? JSON_NUMERIC_CHECK : 0);
-		return ['user' => $object, 'token' => Repository::getREST()->getToken()->encode(['serialized' => $transformed])];
-	}
-
 	public static function getObjectFromToken($token)
 	{
 		return json_decode(Repository::getREST()->getToken()->decode($token)['serialized']);
-	}
-
-	public static function getCurrentUser()
-	{
-		$token = Repository::getREST()->getTokenFromRequest();
-		return self::castObjectToUser(self::getObjectFromToken($token));
-	}
-
-	private static function castObjectToUser($object)
-	{
-		$usuario = Helper::cast($object->__class, $object);
-
-		$persona = Helper::cast($object->persona->__class, $object->persona);
-		$usuario->setPersona($persona);
-
-		if(isset($object->terminal))
-		{
-			$terminal = Helper::cast($object->terminal->__class, $object->terminal);
-			$usuario->setTerminal($terminal);
-		}
-
-		return $usuario;
 	}
 
 	public static function getCurrentTimestamp($timezone = TIMEZONE)

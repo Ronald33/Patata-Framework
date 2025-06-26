@@ -62,8 +62,18 @@ class Caller
 				if($reflectionClass->IsInstantiable())
 				{
 					$instance = new $controller;
-					$data = [$instance, $method];
-					if(is_callable($data)) { return call_user_func_array($data, $arguments); }
+
+					if ($reflectionClass->hasMethod($method))
+					{
+						$reflectionMethod = $reflectionClass->getMethod($method);
+						
+						$params = $reflectionMethod->getParameters();
+						$totalParams = count($params);
+
+						$filledArguments = array_pad($arguments, $totalParams, null);
+
+						return $reflectionMethod->invokeArgs($instance, $filledArguments);
+					}
 					else { return Message::noCallable($method); }
 				}
 				else { return Message::noInstanciable($controller); }

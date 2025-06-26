@@ -19,7 +19,14 @@ abstract class PatataRepository
     public static function getMiddlewareExecutor()
     {
         require_once(PATH_CORE . '/middleware/MiddlewareExecutor.php');
-        return core\middleware\MiddlewareExecutor::getInstance();
+        require_once(PATH_FOR_CUSTOM . DIRECTORY_SEPARATOR . 'MyMiddlewareClassic.php');
+        require_once(PATH_FOR_CUSTOM . DIRECTORY_SEPARATOR . 'MyMiddlewareRest.php');
+
+        $middlewareExecutor = core\middleware\MiddlewareExecutor::getInstance();
+        $middlewareExecutor->addMiddlewareClassic(new MyMiddlewareClassic());
+        $middlewareExecutor->addMiddlewareRest(new MyMiddlewareRest());
+
+        return $middlewareExecutor;
     }
 
     public static function getToken($extra_configuration_path = CUSTOM_CONFIG_PATH)

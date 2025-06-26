@@ -1,2 +1,2 @@
 <?php
-// define('PATH_EXAMPLE',      PATH_BASE . DIRECTORY_SEPARATOR . 'example');
+// define('PATH_EXAMPLE',      PATH_ROOT . DIRECTORY_SEPARATOR . 'example');

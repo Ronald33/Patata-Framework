@@ -6,15 +6,13 @@ class PageController
 
 	public function __construct()
 	{
-		$this->model = new Page();
+		$this->model = new PageDAO();
 		$this->view = new PageView();
 	}
 
 	public function index()
 	{
-		$message = $this->model->getMessage();
-		$data = ['message' => $message];
-		$this->view->index($data);
+		$this->view->index($this->model->select());
 	}
 
 	public function s404()

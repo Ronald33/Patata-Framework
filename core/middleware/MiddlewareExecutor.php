@@ -5,9 +5,10 @@ class MiddlewareExecutor
 {
 	private static $instance = null;
 
-	private $_middlewares;
+	private $_middlewaresClassic;
+	private $_middlewaresRest;
 
-	private function __construct() { $this->_middlewares = []; }
+	private function __construct() { $this->_middlewaresClassic = []; $this->_middlewaresRest = []; }
 
 	public static function getInstance()
 	{
@@ -15,12 +16,23 @@ class MiddlewareExecutor
 		return self::$instance;
 	}
 
-	public function add(Middleware $middleware) { array_push($this->_middlewares, $middleware); }
+	public function addMiddlewareClassic(Middleware $_middlewareClassic) { array_push($this->_middlewaresClassic, $_middlewareClassic); }
+	public function addMiddlewareRest(Middleware $_middlewareRest) { array_push($this->_middlewaresRest, $_middlewareRest); }
 	public function execute()
 	{
-		foreach($this->_middlewares as $middleware)
+		if(!ENABLE_REST || \Repository::getREST()->getData() == 'CLASS-EXCEPTIONS')
 		{
-			if($middleware->execute() === false) { return false; }
+			foreach($this->_middlewaresClassic as $middleware)
+			{
+				if($middleware->execute() === false) { return false; }
+			}
+		}
+		else
+		{
+			foreach($this->_middlewaresRest as $middleware)
+			{
+				if($middleware->execute() === false) { return false; }
+			}
 		}
 
 		return true;
