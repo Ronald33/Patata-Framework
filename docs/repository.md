@@ -61,5 +61,3 @@ Una vez personalizados los métodos, se siguen utilizando de forma transparente:
 $db = Repository::getDB();
 $validator = Repository::getValidator();
 ```
-
-> 📄 La documentación relacionada a middlewares se encuentra en [`repository.md`](repository.md).
