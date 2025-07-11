@@ -50,36 +50,48 @@ class Caller
     // Caso contrario retorna un string, el cual indica el error a solucionar
 	private function call($class, $method, $arguments = [])
 	{
-		$controller = $class . $this->_config['CONTROLLER_SUFFIX'];
+		$controller = $class . $this->getSuffix();
+
+		$result = $this->getReflectionClass($class);
+		if(is_string($result)) { return $result; }
+		else
+		{
+			$instance = new $controller;
+
+			if($result->hasMethod($method))
+			{
+				$reflectionMethod = $result->getMethod($method);
+				
+				$params = $reflectionMethod->getParameters();
+				$totalParams = count($params);
+
+				$filledArguments = array_pad($arguments, $totalParams, null);
+
+				return $reflectionMethod->invokeArgs($instance, $filledArguments);
+			}
+			else { return Message::noCallable($method); }
+		}
+	}
+
+	public function getReflectionClass($class)
+	{
+		$controller = $class . $this->getSuffix();
 		$file = $this->_pathControllers . '/' . $controller . '.php';
 		
 		if(file_exists($file))
 		{
 			require_once($file);
 			if(class_exists($controller))
-			{				
+			{
 				$reflectionClass = new \ReflectionClass($controller);
-				if($reflectionClass->IsInstantiable())
-				{
-					$instance = new $controller;
-
-					if ($reflectionClass->hasMethod($method))
-					{
-						$reflectionMethod = $reflectionClass->getMethod($method);
-						
-						$params = $reflectionMethod->getParameters();
-						$totalParams = count($params);
-
-						$filledArguments = array_pad($arguments, $totalParams, null);
-
-						return $reflectionMethod->invokeArgs($instance, $filledArguments);
-					}
-					else { return Message::noCallable($method); }
-				}
+				if($reflectionClass->IsInstantiable()) { return $reflectionClass; }
 				else { return Message::noInstanciable($controller); }
 			}
 			else { return Message::noClass($controller); }
 		}
 		else { return Message::noFile($file); }
 	}
+
+	public function getSuffix() { return $this->_config['CONTROLLER_SUFFIX']; }
+	public function getPathControllers() { return $this->_pathControllers; }
 }

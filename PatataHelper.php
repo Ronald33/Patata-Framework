@@ -20,16 +20,15 @@ abstract class PatataHelper
         return $protocol . $_SERVER['SERVER_NAME'] . ':' . $_SERVER['SERVER_PORT'] . self::getFolder();
     }
 
-    public static function getAllowedMethodsFromClass($class)
+    public static function getAllowedMethodsFromClass(ReflectionClass $refClass)
 	{
-        $uriDecoder = Repository::getURIDecoder();
-        $methods = $uriDecoder->getMethods();
+        $methods = Repository::getURIDecoder()->getMethods();
 		$allowed = [];
         if(is_array($methods))
         {
-            foreach ($methods as $key => $value)
+            foreach($methods as $key => $value)
             {
-                if(is_callable(array('\\' . $class, $value))) { array_push($allowed, $key); }
+				if($refClass->hasMethod($value)) { array_push($allowed, $key); }
             }
         }
 		return implode(', ', $allowed);

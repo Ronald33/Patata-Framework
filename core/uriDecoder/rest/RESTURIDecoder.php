@@ -37,7 +37,6 @@ class RESTURIDecoder extends URIDecoder
 		assert(ctype_alnum($this->_config['METHODS']['POST']), 'In RESTURIDecoder, METHODS[POST] is invalid');
 		assert(ctype_alnum($this->_config['METHODS']['PUT']), 'In RESTURIDecoder, METHODS[PUT] is invalid');
 		assert(ctype_alnum($this->_config['METHODS']['DELETE']), 'In RESTURIDecoder, METHODS[DELETE] is invalid');
-		assert(ctype_alnum($this->_config['METHODS']['OPTIONS']), 'In RESTURIDecoder, METHODS[OPTIONS] is invalid');
 		assert(ctype_alnum($this->_config['METHODS']['PATCH']), 'In RESTURIDecoder, METHODS[PATCH] is invalid');
 		assert(is_string($this->_config['ACA']['ORIGIN']), 'In RESTURIDecoder, ACA[ORIGIN] is invalid');
 		assert(is_string($this->_config['ACA']['HEADERS']), 'In RESTURIDecoder, ACA[HEADERS] is invalid');
@@ -61,11 +60,12 @@ class RESTURIDecoder extends URIDecoder
 		}
 		else
 		{
-			if(isset($_GET['PATATA_REST_METHOD']) && $_SERVER['REQUEST_METHOD'] != 'OPTIONS')
+			if($_SERVER['REQUEST_METHOD'] == 'OPTIONS') { $this->_method = 'OPTIONS'; }
+			else
 			{
-				$this->_method = $this->_config['METHODS'][$_GET['PATATA_REST_METHOD']];
+				if(isset($_GET['PATATA_REST_METHOD'])) { $this->_method = $this->_config['METHODS'][$_GET['PATATA_REST_METHOD']]; }
+				else { $this->_method = $this->_config['METHODS'][$_SERVER['REQUEST_METHOD']]; }
 			}
-			else { $this->_method = $this->_config['METHODS'][$_SERVER['REQUEST_METHOD']]; }
 		}
 
 		$this->_arguments = $parts;
