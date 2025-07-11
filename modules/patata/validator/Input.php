@@ -44,31 +44,46 @@ class Input
 		foreach($this->paths as $path) { require_once($path); }
 	}
 	
-	public function addRule($type)
+	public function addRule($ruleName)
 	{
-		if(($this->value === '' || $this->value === NULL || $this->value === []) && $this->optional) { return $this; }
+		$isEmpty = ($this->value === '' || $this->value === NULL || $this->value === []);
 
-		$message = -1;
-		if(is_array($type))
+		if($isEmpty)
 		{
-			$message = $type[1];
-			$type = $type[0];
+			if($this->optional) { return $this; }
+			else
+			{
+				if($this->valid == true) // First time
+				{
+					$this->valid = false;
+					array_push($this->messages, $this->getMessageByRule('hasContent'));
+				}
+
+				return $this;
+			}
 		}
 
-		$callable = $this->getCallable($type);
-		assert($callable !== false, 'La regla ' . $type . ' no existe');
+		$message = -1;
+		if(is_array($ruleName))
+		{
+			$message = $ruleName[1];
+			$ruleName = $ruleName[0];
+		}
+
+		$callable = $this->getCallable($ruleName);
+		assert($callable !== false, 'La regla ' . $ruleName . ' no existe');
 		
 		$args = func_get_args();		
 		
         array_shift($args);
         array_unshift($args, $this->value);
         
-		$result = call_user_func_array([$callable, $type], $args);
+		$result = call_user_func_array([$callable, $ruleName], $args);
 		
 		if(!$result)
 		{
 			$this->valid = false;
-			if($message === -1) { $message = $this->getMessageByRule($type); }
+			if($message === -1) { $message = $this->getMessageByRule($ruleName); }
 			array_push($this->messages, $message);
 		}
 
