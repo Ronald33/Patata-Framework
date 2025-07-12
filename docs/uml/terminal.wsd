@@ -1,0 +1,14 @@
+@startuml usuarios
+
+title
+Ejemplo básico
+end title
+scale 1
+
+class Terminal
+{
+    -nombre: String
+    -habilitado: Boolean
+}
+
+@enduml
