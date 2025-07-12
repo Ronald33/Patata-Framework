@@ -111,30 +111,38 @@ Este campo fallará si está vacío, y mostrará el mensaje `"El nombre es oblig
 
 | Regla                         | Parámetros adicionales         | Descripción                                        |
 |------------------------------|--------------------------------|----------------------------------------------------|
-| `hasContent`                 | —                              | Verifica que no esté vacío                         |
-| `minLengthIs`                | `int $size`                    | Longitud mínima (caracteres)                       |
-| `maxLengthIs`                | `int $size`                    | Longitud máxima (caracteres)                       |
-| `isWord`                     | —                              | Solo letras                                        |
+| `hasContent`                 | —                              | No puede estar vacío                               |
+| `minLengthIs`                | `int $size`                    | Longitud mínima permitida                          |
+| `maxLengthIs`                | `int $size`                    | Longitud máxima permitida                          |
+| `isWord`                     | —                              | Solo se permiten letras                            |
 | `isWords`                    | —                              | Letras y espacios                                  |
-| `isAlphanumeric`             | —                              | Letras y números                                   |
-| `isAlphanumericAndSpaces`    | —                              | Letras, números y espacios                         |
+| `isAlphanumeric`             | —                              | Caracteres alfanuméricos                           |
+| `isAlphanumericAndSpaces`    | —                              | Caracteres alfanuméricos y espacios                |
 | `isEmail`                    | —                              | Email válido                                       |
 | `isUrl`                      | —                              | URL válida                                         |
 | `isInt`                      | —                              | Número entero                                      |
-| `isFloat`                    | —                              | Número decimal                                     |
-| `isPositive`                 | —                              | Mayor a 0                                          |
-| `isPositiveOrZero`           | —                              | Mayor o igual a 0                                  |
-| `isBetween`                  | `float $min`, `float $max`     | Rango numérico                                     |
-| `isDate`                     | —                              | Formato `Y-m-d`                                    |
-| `isDateTime`                 | —                              | Formato `Y-m-d H:i:s`                              |
+| `isFloat`                    | —                              | Número flotante válido                             |
+| `isPositive`                 | —                              | Valor mayor que cero                               |
+| `isPositiveOrZero`           | —                              | Valor mayor o igual a cero                         |
+| `isBetween`                  | `float $min`, `float $max`     | Valor dentro del rango permitido                   |
+| `isDate`                     | —                              | Fecha con formato `Y-m-d`                          |
+| `isDateTime`                 | —                              | Fecha y hora con formato `Y-m-d H:i:s`             |
 | `isTimestamp`                | —                              | Timestamp válido                                   |
 | `isArray`                    | —                              | Es un arreglo                                      |
 | `hasElements`                | —                              | Arreglo con al menos un valor                      |
-| `hasUniqueValues`            | —                              | Arreglo sin valores repetidos                      |
-| `isIn`                       | `array $valores`               | Valor dentro del arreglo dado                      |
-| `isDifferentTo`              | `mixed $otroValor`             | El valor no debe ser igual al dado                 |
+| `hasUniqueValues`            | —                              | Arreglo sin elementos duplicados                   |
+| `isIn`                       | `array $valores`               | Valor incluido en las opciones permitidas          |
+| `isDifferentTo`              | `mixed $otroValor`             | Valor distinto al especificado                     |
 | `isStdClass`                 | —                              | Es un objeto `stdClass`                            |
-| `isNotNull`                  | —                              | No debe ser NULL                                   |
+| `isNotNull`                  | —                              | No debe ser `NULL`                                 |
+| `isBoolean`                  | —                              | Valor booleano (`true`, `false`, `'true'`, `'false'`) |
+| `isInputText`                | —                              | Texto o número (útil como base para otras reglas)  |
+| `isRegex`                    | `string $pattern`              | Coincide con una expresión regular                 |
+| `isDNI`                      | —                              | Cadena de 8 dígitos                                |
+| `isRUC`                      | —                              | Cadena de 11 dígitos                               |
+| `isUnique`                   | —                              | El valor no debe estar registrado (personalizable) |
+
+> 💡 Algunas reglas como `isRegex`, `isInputText` e `isUnique` están pensadas para ser usadas como base o personalizadas según tus necesidades.
 
 ---
 
