@@ -40,7 +40,7 @@ Esto deshabilita la verificación de autenticación para todas las rutas (gracia
 
 El framework está diseñado para impulsar la **programación orientada a objetos**, por ello, el primer paso fue diseñar el diagrama de clases.
 
-![Diagrama de clases](resources/class.png)
+![Diagrama de clases](resources/public/documentation/class/class.png)
 
 ---
 
@@ -48,11 +48,11 @@ El framework está diseñado para impulsar la **programación orientada a objeto
 
 A partir del diagrama de clases se diseñó su correspondiente modelo de base de datos.  
 
-![Diagrama ER](resources/db.png)
+![Diagrama ER](resources/public/documentation/db/db.png)
 
 Todo el SQL necesario —incluida la creación del esquema, la tabla `terminales` y un dato de ejemplo— está disponible en el siguiente archivo:
 
-👉 [`db.sql`](resources/db.sql)
+👉 [`db.sql`](resources/private/documentation/db/db.sql)
 
 ---
 
@@ -380,7 +380,7 @@ Para que el proyecto funcione correctamente al activar el modo REST, es necesari
 
 ### a) Crear la base de datos y definir credenciales
 
-Luego de importar el archivo [`resources/db.sql`](resources/db.sql) —que contiene el esquema, la tabla `terminales` y datos de ejemplo— se debe configurar la conexión a la base de datos, para ello edita el archivo:
+Luego de importar el archivo [`resources/private/documentation/db/db.sql`](resources/private/documentation/db/db.sql) —que contiene el esquema, la tabla `terminales` y datos de ejemplo— se debe configurar la conexión a la base de datos, para ello edita el archivo:
 
 ```
 for-custom/config.ini

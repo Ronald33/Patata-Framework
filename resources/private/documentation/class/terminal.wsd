@@ -1,0 +1,14 @@
+@startuml terminal
+
+title
+Terminal
+end title
+scale 1
+
+class Terminal
+{
+    -nombre: String
+    -habilitado: Boolean
+}
+
+@enduml

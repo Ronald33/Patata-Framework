@@ -1,0 +1,23 @@
+@url = http://localhost/upfw/Terminal
+
+###
+GET {{url}}
+
+###
+POST {{url}}
+Content-Type: application/json
+
+{
+    "nombre": "Creado desde VSC"
+}
+
+###
+PUT {{url}}/2
+Content-Type: application/json
+
+{
+    "nombre": "Mod desde VSC"
+}
+
+###
+DELETE {{url}}/2
