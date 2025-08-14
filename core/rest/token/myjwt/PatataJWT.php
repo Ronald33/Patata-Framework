@@ -39,7 +39,7 @@ class PatataJWT implements \core\rest\token\IToken
 	public function decode($token)
     {
         $parts = explode('.', $token);
-        if(count($parts) !== 3) { return null; }
+        if(count($parts) !== 3) { return NULL; }
 
         [$headerB64, $payloadB64, $signatureB64] = $parts;
 
@@ -47,10 +47,10 @@ class PatataJWT implements \core\rest\token\IToken
         $payload = json_decode($this->base64UrlDecode($payloadB64), true);
         $signature = self::base64UrlDecode($signatureB64);
 
-        if(!$header || !$payload || !$signature) return null;
+        if(!$header || !$payload || !$signature) return NULL;
 
         $validSig = hash_hmac('sha256', "$headerB64.$payloadB64", $this->key, true);
-        if (!hash_equals($validSig, $signature)) return null;
+        if(!hash_equals($validSig, $signature)) return NULL;
 
         return $payload;
     }

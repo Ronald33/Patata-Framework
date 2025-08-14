@@ -36,10 +36,8 @@ abstract class PatataHelper
 
 	public static function getCustomConfig() { return parse_ini_file(CUSTOM_CONFIG_PATH, true); }
 
-	public static function stringIsPositiveNumber($string)
-	{
-		return filter_var($string, FILTER_VALIDATE_FLOAT) !== false && $string > 0;
-	}
+	public static function isPositiveInteger($value) { return filter_var($value, FILTER_VALIDATE_INT) !== false && (int)$value > 0; }
+
 
     private static function setProperty($destinationReflection, $name, &$destination, $value)
 	{

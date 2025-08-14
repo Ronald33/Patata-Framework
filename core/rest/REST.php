@@ -53,10 +53,15 @@ class REST
 
 		if($token)
 		{
-			if($this->validateTokenFromConfig($token)) { $this->_data = $token; }
+			if($this->validateTokenFromConfig($token)) { $this->_data = 'SPECIAL_TOKENS'; }
 			else
 			{
-				try { $this->_data = $this->_token->decode($token);	$this->_dataIsDecodable = true; }
+				try
+				{
+					$this->_data = $this->_token->decode($token);
+					if($this->_data) { $this->_dataIsDecodable = true; }
+					else { return false; }
+				}
 				catch(Exception $e) { return false; }
 			}
 		}

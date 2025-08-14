@@ -22,7 +22,7 @@ class Validator
 		array_unshift($this->_clases, $name_class);
 	}
 
-	public function addInput($name, $value, $is_optional = false)
+	public function addInput($name, $value = NULL, $is_optional = false)
 	{
 		$input = new Input($this->_paths, $this->_clases, $name, $value, $is_optional);
 		array_push($this->inputs, $input);
