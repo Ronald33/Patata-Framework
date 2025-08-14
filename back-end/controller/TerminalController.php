@@ -20,6 +20,15 @@ class TerminalController
             if($result) { $this->view->j200($result); }
             else { $this->view->j404(); }
         }
+        else if(isset($_GET['filter']))
+        {
+            switch($_GET['filter'])
+            {
+                case 'cerradas': $result = $this->dao->selectCerradas(); break;
+                default: $this->view->j404();
+            }
+            $this->view->j200($result);
+        }
         else { $this->view->j200($this->dao->selectAll()); }
     }
 
@@ -43,14 +52,28 @@ class TerminalController
         if($this->validator->hasErrors()) { $this->view->j400($this->validator->getInputsWithErrors()); }
         $terminal = TerminalHelper::castToTerminal($payload, $id);
         $terminal->setId($id);
+        $old = $this->dao->selectById($id);
+        $terminal->setHabilitado($old->getHabilitado());
+
         if(!$this->dao->update($terminal)) { $this->view->j500(); }
         $this->view->j200($terminal);
     }
 
-    public function patch($id = null)
+    public function delete($id = NULL)
     {
         if($id == NULL) { $this->view->j501(); }
+        if($id == 1) { $this->view->j423(); }
         if(!$this->dao->selectById($id)) { $this->view->j404(); }
+
+        if(!$this->dao->delete($id)) { $this->view->j500(); }
+        $this->view->j204();
+    }
+
+    public function patch($id = NULL)
+    {
+		if($id == NULL) { $this->view->j501(); }
+        $terminal = $this->dao->selectById($id);
+        if(!$terminal) { $this->view->j404(); }
 
         $payload = Helper::getPayload();
         if($payload)
@@ -58,20 +81,12 @@ class TerminalController
             if(isset($payload->habilitado))
             {
                 if(!in_array($payload->habilitado, [true, false], true)) { $this->view->j400(); }
+                if($terminal->getHabilitado() == $payload->habilitado) { $this->view->j400(); }
                 if(!$this->dao->setHabilitado($id, $payload->habilitado)) { $this->view->j500(); }
                 $this->view->j200(['habilitado' => $payload->habilitado]);
             }
         }
-
+        
         $this->view->j501();
-    }
-
-    public function delete($id = null)
-    {
-        if($id == null) { $this->view->j501(); }
-        if($id == 1) { $this->view->j423(); }
-        if(!$this->dao->selectById($id)) { $this->view->j404(); }
-        if(!$this->dao->delete($id)) { $this->view->j500(); }
-        $this->view->j204();
     }
 }

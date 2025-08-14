@@ -1,5 +1,5 @@
 <?php
-class Terminal implements JsonSerializable 
+class Terminal implements JsonSerializable
 {
     private $id;
     private $nombre;
