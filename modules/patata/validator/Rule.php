@@ -11,6 +11,10 @@ class Rule
     {
         $this->_messages = [
             'default' 					=> 'No es válido', 
+            'isBoolean' 				=> 'No es válido', 
+            'isInputText' 				=> 'No es válido', 
+            'isRegex' 				    => 'No es válido', 
+            'isArray' 				    => 'No es válido', 
             'hasContent' 				=> 'No puede estar vacío', 
             'minLengthIs' 				=> 'No cumple con la cantidad mínima de caracteres', 
             'maxLengthIs' 				=> 'Excede la cantidad de caracteres permitidos', 
@@ -32,7 +36,6 @@ class Rule
             'isDate' 					=> 'Debe de ser una fecha', 
             'isDateTime'				=> 'Debe de ser una fecha y hora', 
             'isTimestamp'				=> 'Debe de ser un timestamp válido', 
-            'isDate' 					=> 'Debe de ser una fecha', 
             'isDifferentTo'				=> 'El valor ingresado no está permitido', 
             'isIn' 						=> 'No se encuentra en las opciones disponibles', 
             'isUnique' 					=> 'El valor ingresado ya se encuentra registrado', 
@@ -51,7 +54,6 @@ class Rule
 
     /* Strings */
     public static function isInputText($value) { return is_string($value) || is_numeric($value); }
-    public static function isString($value) { return is_string($value); }
     public static function hasContent($value)
     {
         if(!self::isInputText($value)) { return false; }
@@ -96,11 +98,6 @@ class Rule
     {
         if(!self::isInputText($value)) { return false; }
         return self::isRegex((string) $value, '/^[0-9]{11}$/');
-    }
-    public static function isUbigeo($value)
-    {
-        if(!self::isInputText($value)) { return false; }
-        return self::isRegex((string) $value, '/^[0-9]{6}$/');
     }
     public static function isRegex($value, $regex)
     {

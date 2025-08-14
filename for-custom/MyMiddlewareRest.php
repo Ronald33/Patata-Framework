@@ -21,6 +21,7 @@ class MyMiddlewareRest implements core\middleware\Middleware
         $class = $this->uriDecoder->getClass();
         $method = $this->uriDecoder->getMethod();
         $arguments = $this->uriDecoder->getArguments();
+        $data = Repository::getREST()->getData();
 
         return true;
     }
@@ -32,7 +33,7 @@ class MyMiddlewareRest implements core\middleware\Middleware
         $arguments = $this->uriDecoder->getArguments();
         $data = Repository::getREST()->getData();
 
-        if($data == 'CLASS_EXCEPTIONS') { return true; }
+        if($data == 'CLASS_EXCEPTIONS' || $data == 'SPECIAL_TOKENS') { return true; }
 
         if($data == 'SKIP_AUTH')
         {
