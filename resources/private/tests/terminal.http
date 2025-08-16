@@ -1,4 +1,4 @@
-@url = http://localhost/upfw/Terminal
+@url = http://localhost/api/Terminal
 
 ###
 GET {{url}}
