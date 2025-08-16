@@ -33,7 +33,18 @@ class MyMiddlewareRest implements core\middleware\Middleware
         $arguments = $this->uriDecoder->getArguments();
         $data = Repository::getREST()->getData();
 
-        if($data == 'CLASS_EXCEPTIONS' || $data == 'SPECIAL_TOKENS') { return true; }
+        if($data == 'CLASS_EXCEPTIONS') { return true; }
+        if($data == 'SPECIAL_TOKENS')
+        {
+            $rest = Repository::getREST();
+
+            /*if($rest->getToken() == 'usuario-login')
+            {
+                if($class == 'Usuario' && $method == 'get' && isset($_GET['user']) && isset($_GET['password'])) { return true; }
+            }*/
+
+            return false;
+        }
 
         if($data == 'SKIP_AUTH')
         {
