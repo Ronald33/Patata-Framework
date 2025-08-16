@@ -1,7 +1,7 @@
 <?php
-namespace core\rest\token;
+namespace core\rest\tokenManager;
 
-interface IToken
+interface ITokenManager
 {
 	public function encode($payload);
 	public function decode($token);

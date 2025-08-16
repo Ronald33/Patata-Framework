@@ -32,10 +32,10 @@ abstract class PatataRepository
     public static function getREST($extra_configuration_path = CUSTOM_CONFIG_PATH)
     {
         require_once(PATH_CORE . '/rest/REST.php');
-        require_once(PATH_CORE . '/rest/token/myjwt/PatataJWT.php');
+        require_once(PATH_CORE . '/rest/tokenManager/myjwt/PatataJWT.php');
         
         $rest = core\rest\REST::getInstance($extra_configuration_path);
-        $rest->setToken(new \core\rest\token\myjwt\PatataJWT($extra_configuration_path));
+        $rest->setTokenManager(new \core\rest\tokenManager\myjwt\PatataJWT($extra_configuration_path));
         return $rest;
     }
 

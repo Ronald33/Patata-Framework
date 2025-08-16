@@ -1,9 +1,9 @@
 <?php
-namespace core\rest\token\myjwt;
+namespace core\rest\tokenManager\myjwt;
 
-require_once(PATH_CORE . '/rest/token/IToken.php');
+require_once(PATH_CORE . '/rest/tokenManager/ITokenManager.php');
 
-class PatataJWT implements \core\rest\token\IToken
+class PatataJWT implements \core\rest\tokenManager\ITokenManager
 {
     private $config;
     private $key;

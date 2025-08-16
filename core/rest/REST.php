@@ -3,13 +3,14 @@ namespace core\rest;
 
 require_once(__DIR__ . '/Helper.php');
 
-use core\rest\token\IToken;
+use core\rest\tokenManager\ITokenManager;
 use Exception;
 
 class REST
 {
 	private $_config;
 	private $_data;
+	private $_tokenManager;
 	private $_token;
 	private $_dataIsDecodable;
 	private static $instance;
@@ -38,7 +39,7 @@ class REST
 		return self::$instance;
 	}
 
-	public function setToken(IToken $token) { $this->_token = $token; }
+	public function setTokenManager(ITokenManager $tokenManager) { $this->_tokenManager = $tokenManager; }
 
 	public function auth($class)
 	{
@@ -53,12 +54,14 @@ class REST
 
 		if($token)
 		{
+			$this->_token = $token;
+
 			if($this->validateTokenFromConfig($token)) { $this->_data = 'SPECIAL_TOKENS'; }
 			else
 			{
 				try
 				{
-					$this->_data = $this->_token->decode($token);
+					$this->_data = $this->_tokenManager->decode($token);
 					if($this->_data) { $this->_dataIsDecodable = true; }
 					else { return false; }
 				}
@@ -89,8 +92,9 @@ class REST
 		else { return false; }
 	}
 
-	public function encode($data) { return $this->_token->encode($data); }
+	public function encode($data) { return $this->_tokenManager->encode($data); }
 	public function getData() { return $this->_data; }
+	public function getToken() { return $this->_token; }
 
 	public function getTokenFromRequest()
 	{
